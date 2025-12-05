@@ -1,0 +1,38 @@
+package de.thws.fiw.bs.kpi.domain.model;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+public class KPIEntry {
+
+    private UUID id;
+    private LocalDateTime timestamp;
+    private double value;
+
+    public  KPIEntry() {
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
+    public LocalDateTime getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(LocalDateTime timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public double getValue() {
+        return value;
+    }
+
+    public void setValue(double value) {
+        this.value = value;
+    }
+}
