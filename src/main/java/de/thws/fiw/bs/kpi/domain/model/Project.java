@@ -8,48 +8,33 @@ public class Project {
     private String name;
     private URI repoUrl;
 
-
-    public Project(UUID id, String name, URI repoUrl) {
-        if (id == null) {
-            throw new IllegalArgumentException("Id cannot be null");
-        }
-        this.id = id;
-        this.name = validateName(name);
-        this.repoUrl = validateRepoUrl(repoUrl);
+    public Project() {
     }
 
-    public UUID id() {
+    public UUID getId() {
         return id;
     }
 
-    public String name() {
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
+    public String getName() {
         return name;
     }
 
-    public URI repoUrl() {
+    public void setName(String name) {
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("Name must not be empty");
+        }
+        this.name = name;
+    }
+
+    public URI getRepoUrl() {
         return repoUrl;
     }
 
-    public void rename(String newName) {
-        this.name = validateName(newName);
-    }
-
-    public void changeRepoUrl(URI newRepoUrl) {
-        this.repoUrl = validateRepoUrl(newRepoUrl);
-    }
-
-    private String validateName(String name) {
-        if (name == null) {
-            throw new IllegalArgumentException("Name cannot be null");
-        }
-        String trimmedName = name.trim();
-        if (trimmedName.isEmpty()) {
-            throw new IllegalArgumentException("Name cannot be empty");
-        }
-        return trimmedName;
-    }
-
-    private URI validateRepoUrl(URI repoUrl) {
+    public void setRepoUrl(URI repoUrl) {
         if (repoUrl == null) {
             throw new IllegalArgumentException("Repository URL cannot be null");
         }
@@ -63,6 +48,6 @@ public class Project {
         String path = repoUrl.getPath();
         if (path == null || path.isBlank() || "/".equals(path))
             throw new IllegalArgumentException("Repository URL must contain a path");
-        return repoUrl;
+        this.repoUrl = repoUrl;
     }
 }
