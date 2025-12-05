@@ -9,7 +9,7 @@ public class KPIEntry {
     private LocalDateTime timestamp;
     private double value;
 
-    public  KPIEntry() {
+    public KPIEntry() {
     }
 
     public UUID getId() {
@@ -25,6 +25,9 @@ public class KPIEntry {
     }
 
     public void setTimestamp(LocalDateTime timestamp) {
+        if (timestamp.isAfter(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Timestamp must not be in the future");
+        }
         this.timestamp = timestamp;
     }
 

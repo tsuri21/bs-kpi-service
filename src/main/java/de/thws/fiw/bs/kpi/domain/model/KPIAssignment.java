@@ -11,7 +11,8 @@ public class KPIAssignment {
     private KPI kpi;
     private List<KPIEntry> entries;
 
-    public KPIAssignment() {}
+    public KPIAssignment() {
+    }
 
     public UUID getId() {
         return id;
@@ -25,23 +26,26 @@ public class KPIAssignment {
         return green;
     }
 
-    public void setGreen(double green) {
-        this.green = green;
-    }
-
     public double getYellow() {
         return yellow;
-    }
-
-    public void setYellow(double yellow) {
-        this.yellow = yellow;
     }
 
     public double getRed() {
         return red;
     }
 
-    public void setRed(double red) {
+    public void setThresholds(double green, double yellow, double red) {
+        TargetDestination destination = kpi.getDestination();
+        boolean result = switch (destination) {
+            case INCREASING -> green > yellow && yellow > red;
+            case DECREASING -> green < yellow && yellow < red;
+            case RANGE -> 0 < yellow && yellow < red;
+        };
+        if (!result) {
+            throw new IllegalArgumentException("Thresholds are not valid");
+        }
+        this.green = green;
+        this.yellow = yellow;
         this.red = red;
     }
 
