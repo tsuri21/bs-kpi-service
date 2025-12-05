@@ -1,12 +1,14 @@
 package de.thws.fiw.bs.kpi.domain.model;
 
 import java.net.URI;
+import java.util.List;
 import java.util.UUID;
 
 public class Project {
     private UUID id;
     private String name;
     private URI repoUrl;
+    private List<KPIAssignment> assignments;
 
     public Project() {
     }
@@ -49,5 +51,13 @@ public class Project {
         if (path == null || path.isBlank() || "/".equals(path))
             throw new IllegalArgumentException("Repository URL must contain a path");
         this.repoUrl = repoUrl;
+    }
+
+    public List<KPIAssignment> getAssignments() {
+        return assignments;
+    }
+
+    public void setAssignments(List<KPIAssignment> assignments) {
+        this.assignments = assignments;
     }
 }
