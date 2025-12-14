@@ -13,6 +13,13 @@ public class Project {
     public Project() {
     }
 
+    public Project(UUID id, String name, URI repoUrl, List<KPIAssignment> assignments) {
+        this.id = id;
+        setName(name);
+        setRepoUrl(repoUrl);
+        this.assignments = assignments;
+    }
+
     public UUID getId() {
         return id;
     }
@@ -25,7 +32,7 @@ public class Project {
         return name;
     }
 
-    public void setName(String name) {
+    public final void setName(String name) {
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("Name must not be empty");
         }
@@ -36,7 +43,7 @@ public class Project {
         return repoUrl;
     }
 
-    public void setRepoUrl(URI repoUrl) {
+    public final void setRepoUrl(URI repoUrl) {
         if (repoUrl == null) {
             throw new IllegalArgumentException("Repository URL cannot be null");
         }

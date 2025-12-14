@@ -14,6 +14,13 @@ public class KPIAssignment {
     public KPIAssignment() {
     }
 
+    public KPIAssignment(UUID id, double green, double yellow, double red, KPI kpi, List<KPIEntry> entries) {
+        this.id = id;
+        setThresholds(green, yellow, red);
+        this.kpi = kpi;
+        this.entries = entries;
+    }
+
     public UUID getId() {
         return id;
     }
@@ -34,7 +41,7 @@ public class KPIAssignment {
         return red;
     }
 
-    public void setThresholds(double green, double yellow, double red) {
+    public final void setThresholds(double green, double yellow, double red) {
         TargetDestination destination = kpi.getDestination();
         boolean result = switch (destination) {
             case INCREASING -> green > yellow && yellow > red;

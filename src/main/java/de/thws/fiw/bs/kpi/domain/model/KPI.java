@@ -10,11 +10,17 @@ public class KPI {
     public KPI() {
     }
 
+    public KPI(UUID id, String name, TargetDestination destination) {
+        this.id = id;
+        setName(name);
+        this.destination = destination;
+    }
+
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
+    public final void setName(String name) {
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("Name must not be empty");
         }
