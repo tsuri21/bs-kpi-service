@@ -21,10 +21,20 @@ class KPITest {
     }
 
     @Test
+    void shouldThrowExceptionWhenDestinationIsNull() {
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> new KPI(id, "Demo", null)
+        );
+
+        assertEquals("Destination must not be null", ex.getMessage());
+    }
+
+    @Test
     void shouldThrowExceptionWhenNameIsNull() {
         IllegalArgumentException ex = assertThrows(
                 IllegalArgumentException.class,
-                () -> new KPI(UUID.randomUUID(), null, TargetDestination.INCREASING)
+                () -> new KPI(id, null, TargetDestination.INCREASING)
         );
 
         assertEquals("Name must not be empty", ex.getMessage());
@@ -34,7 +44,7 @@ class KPITest {
     void shouldThrowExceptionWhenNameIsBlank() {
         IllegalArgumentException ex = assertThrows(
                 IllegalArgumentException.class,
-                () -> new KPI(UUID.randomUUID(), "   ", TargetDestination.RANGE)
+                () -> new KPI(id, "   ", TargetDestination.RANGE)
         );
 
         assertEquals("Name must not be empty", ex.getMessage());

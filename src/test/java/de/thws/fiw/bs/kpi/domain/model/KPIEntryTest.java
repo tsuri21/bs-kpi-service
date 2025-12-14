@@ -24,6 +24,16 @@ class KPIEntryTest {
     }
 
     @Test
+    void shouldThrowExceptionWhenTimestampIsNull() {
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> new KPIEntry(id, null, 10.0)
+        );
+
+        assertEquals("Timestamp must not be null", ex.getMessage());
+    }
+
+    @Test
     void shouldThrowExceptionWhenTimestampIsInFuture() {
         LocalDateTime futureTimestamp = LocalDateTime.now().plusMinutes(1);
 

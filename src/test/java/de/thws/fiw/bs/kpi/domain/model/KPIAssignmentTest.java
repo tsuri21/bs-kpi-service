@@ -12,6 +12,36 @@ class KPIAssignmentTest {
     private final UUID kpiId = UUID.randomUUID();
 
     @Test
+    void shouldThrowExceptionWhenKpiIsNull() {
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> new KPIAssignment(
+                        assignmentId,
+                        100,
+                        70,
+                        40,
+                        null,
+                        null
+                )
+        );
+
+        assertEquals("KPI must not be null", ex.getMessage());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenThresholdsAreSetWithoutKpi() {
+        KPIAssignment assignment = new KPIAssignment();
+        assignment.setId(assignmentId);
+
+        IllegalStateException ex = assertThrows(
+                IllegalStateException.class,
+                () -> assignment.setThresholds(100, 70, 40)
+        );
+
+        assertEquals("KPI must be set before thresholds", ex.getMessage());
+    }
+
+    @Test
     void shouldCreateAssignmentWithValidThresholdsForIncreasingKpi() {
         KPI kpi = new KPI(kpiId, "Demo", TargetDestination.INCREASING);
 
