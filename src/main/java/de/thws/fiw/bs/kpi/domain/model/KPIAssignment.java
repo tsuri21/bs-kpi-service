@@ -16,9 +16,9 @@ public class KPIAssignment {
 
     public KPIAssignment(UUID id, double green, double yellow, double red, KPI kpi, List<KPIEntry> entries) {
         this.id = id;
-        setKpi(kpi);
-        setThresholds(green, yellow, red);
-        setEntries(entries);
+        this.kpi = validateKpi(kpi);
+        validateAndSetThresholds(green, yellow, red);
+        this.entries = normalizeEntries(entries);
     }
 
     public UUID getId() {
@@ -41,7 +41,38 @@ public class KPIAssignment {
         return red;
     }
 
-    public final void setThresholds(double green, double yellow, double red) {
+    public void setThresholds(double green, double yellow, double red) {
+        validateAndSetThresholds(green, yellow, red);
+    }
+
+    public KPI getKpi() {
+        return kpi;
+    }
+
+    public void setKpi(KPI kpi) {
+        this.kpi = validateKpi(kpi);
+    }
+
+    public List<KPIEntry> getEntries() {
+        return entries;
+    }
+
+    public void setEntries(List<KPIEntry> entries) {
+        this.entries = normalizeEntries(entries);
+    }
+
+    private static KPI validateKpi(KPI kpi) {
+        if (kpi == null) {
+            throw new IllegalArgumentException("KPI must not be null");
+        }
+        return kpi;
+    }
+
+    private static List<KPIEntry> normalizeEntries(List<KPIEntry> entries) {
+        return (entries == null) ? List.of() : entries;
+    }
+
+    private void validateAndSetThresholds(double green, double yellow, double red) {
         if (kpi == null) {
             throw new IllegalStateException("KPI must be set before thresholds");
         }
@@ -61,24 +92,5 @@ public class KPIAssignment {
         this.green = green;
         this.yellow = yellow;
         this.red = red;
-    }
-
-    public KPI getKpi() {
-        return kpi;
-    }
-
-    public final void setKpi(KPI kpi) {
-        if (kpi == null) {
-            throw new IllegalArgumentException("KPI must not be null");
-        }
-        this.kpi = kpi;
-    }
-
-    public List<KPIEntry> getEntries() {
-        return entries;
-    }
-
-    public final void setEntries(List<KPIEntry> entries) {
-        this.entries = (entries == null) ? List.of() : entries;
     }
 }

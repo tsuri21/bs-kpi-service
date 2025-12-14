@@ -15,9 +15,9 @@ public class Project {
 
     public Project(UUID id, String name, URI repoUrl, List<KPIAssignment> assignments) {
         this.id = id;
-        setName(name);
-        setRepoUrl(repoUrl);
-        setAssignments(assignments);
+        this.name = validateName(name);
+        this.repoUrl = validateRepoUrl(repoUrl);
+        this.assignments = normalizeAssignments(assignments);
     }
 
     public UUID getId() {
@@ -33,17 +33,33 @@ public class Project {
     }
 
     public final void setName(String name) {
-        if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("Name must not be empty");
-        }
-        this.name = name;
+        this.name = validateName(name);
     }
 
     public URI getRepoUrl() {
         return repoUrl;
     }
 
-    public final void setRepoUrl(URI repoUrl) {
+    public void setRepoUrl(URI repoUrl) {
+        this.repoUrl = validateRepoUrl(repoUrl);
+    }
+
+    public List<KPIAssignment> getAssignments() {
+        return assignments;
+    }
+
+    public void setAssignments(List<KPIAssignment> assignments) {
+        this.assignments = normalizeAssignments(assignments);
+    }
+
+    private static String validateName(String name) {
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("Name must not be empty");
+        }
+        return name;
+    }
+
+    private static URI validateRepoUrl(URI repoUrl) {
         if (repoUrl == null) {
             throw new IllegalArgumentException("Repository URL cannot be null");
         }
@@ -57,14 +73,10 @@ public class Project {
         String path = repoUrl.getPath();
         if (path == null || path.isBlank() || "/".equals(path))
             throw new IllegalArgumentException("Repository URL must contain a path");
-        this.repoUrl = repoUrl;
+        return repoUrl;
     }
 
-    public List<KPIAssignment> getAssignments() {
-        return assignments;
-    }
-
-    public void setAssignments(List<KPIAssignment> assignments) {
-        this.assignments = (assignments == null) ? List.of() : assignments;
+    private static List<KPIAssignment> normalizeAssignments(List<KPIAssignment> assignments) {
+        return (assignments == null) ? List.of() : List.copyOf(assignments);
     }
 }

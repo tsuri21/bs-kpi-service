@@ -14,7 +14,7 @@ public class KPIEntry {
 
     public KPIEntry(UUID id, LocalDateTime timestamp, double value) {
         this.id = id;
-        setTimestamp(timestamp);
+        this.timestamp = validateTimestamp(timestamp);
         this.value = value;
     }
 
@@ -30,14 +30,8 @@ public class KPIEntry {
         return timestamp;
     }
 
-    public final void setTimestamp(LocalDateTime timestamp) {
-        if (timestamp == null) {
-            throw new IllegalArgumentException("Timestamp must not be null");
-        }
-        if (timestamp.isAfter(LocalDateTime.now())) {
-            throw new IllegalArgumentException("Timestamp must not be in the future");
-        }
-        this.timestamp = timestamp;
+    public void setTimestamp(LocalDateTime timestamp) {
+        this.timestamp = validateTimestamp(timestamp);
     }
 
     public double getValue() {
@@ -46,5 +40,15 @@ public class KPIEntry {
 
     public void setValue(double value) {
         this.value = value;
+    }
+
+    private static LocalDateTime validateTimestamp(LocalDateTime timestamp) {
+        if (timestamp == null) {
+            throw new IllegalArgumentException("Timestamp must not be null");
+        }
+        if (timestamp.isAfter(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Timestamp must not be in the future");
+        }
+        return timestamp;
     }
 }
