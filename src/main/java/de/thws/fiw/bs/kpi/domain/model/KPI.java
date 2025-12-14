@@ -13,7 +13,7 @@ public class KPI {
     public KPI(UUID id, String name, TargetDestination destination) {
         this.id = id;
         setName(name);
-        this.destination = destination;
+        setDestination(destination);
     }
 
     public String getName() {
@@ -31,7 +31,10 @@ public class KPI {
         return destination;
     }
 
-    public void setDestination(TargetDestination destination) {
+    public final void setDestination(TargetDestination destination) {
+        if (destination == null) {
+            throw new IllegalArgumentException("Destination must not be null");
+        }
         this.destination = destination;
     }
 

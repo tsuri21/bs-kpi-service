@@ -31,6 +31,9 @@ public class KPIEntry {
     }
 
     public final void setTimestamp(LocalDateTime timestamp) {
+        if (timestamp == null) {
+            throw new IllegalArgumentException("Timestamp must not be null");
+        }
         if (timestamp.isAfter(LocalDateTime.now())) {
             throw new IllegalArgumentException("Timestamp must not be in the future");
         }

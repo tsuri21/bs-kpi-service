@@ -17,7 +17,7 @@ public class Project {
         this.id = id;
         setName(name);
         setRepoUrl(repoUrl);
-        this.assignments = assignments;
+        setAssignments(assignments);
     }
 
     public UUID getId() {
@@ -65,6 +65,6 @@ public class Project {
     }
 
     public void setAssignments(List<KPIAssignment> assignments) {
-        this.assignments = assignments;
+        this.assignments = (assignments == null) ? List.of() : assignments;
     }
 }

@@ -16,9 +16,9 @@ public class KPIAssignment {
 
     public KPIAssignment(UUID id, double green, double yellow, double red, KPI kpi, List<KPIEntry> entries) {
         this.id = id;
-        this.kpi = kpi;
+        setKpi(kpi);
         setThresholds(green, yellow, red);
-        this.entries = entries;
+        setEntries(entries);
     }
 
     public UUID getId() {
@@ -42,7 +42,14 @@ public class KPIAssignment {
     }
 
     public final void setThresholds(double green, double yellow, double red) {
+        if (kpi == null) {
+            throw new IllegalStateException("KPI must be set before thresholds");
+        }
         TargetDestination destination = kpi.getDestination();
+        if (destination == null) {
+            throw new IllegalStateException("KPI destination must not be null");
+        }
+
         boolean result = switch (destination) {
             case INCREASING -> green > yellow && yellow > red;
             case DECREASING -> green < yellow && yellow < red;
@@ -60,7 +67,10 @@ public class KPIAssignment {
         return kpi;
     }
 
-    public void setKpi(KPI kpi) {
+    public final void setKpi(KPI kpi) {
+        if (kpi == null) {
+            throw new IllegalArgumentException("KPI must not be null");
+        }
         this.kpi = kpi;
     }
 
@@ -68,7 +78,7 @@ public class KPIAssignment {
         return entries;
     }
 
-    public void setEntries(List<KPIEntry> entries) {
-        this.entries = entries;
+    public final void setEntries(List<KPIEntry> entries) {
+        this.entries = (entries == null) ? List.of() : entries;
     }
 }
