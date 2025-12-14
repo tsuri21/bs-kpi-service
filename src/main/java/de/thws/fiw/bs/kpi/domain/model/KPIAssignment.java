@@ -16,8 +16,8 @@ public class KPIAssignment {
 
     public KPIAssignment(UUID id, double green, double yellow, double red, KPI kpi, List<KPIEntry> entries) {
         this.id = id;
-        setThresholds(green, yellow, red);
         this.kpi = kpi;
+        setThresholds(green, yellow, red);
         this.entries = entries;
     }
 
