@@ -1,6 +1,6 @@
-package de.thws.fiw.bs.kpi.domain.port.out.persistence;
+package de.thws.fiw.bs.kpi.application.port.out.persistence;
 
-import de.thws.fiw.bs.kpi.domain.model.Project;
+import de.thws.fiw.bs.kpi.application.domain.model.Project;
 
 import java.net.URI;
 import java.util.List;

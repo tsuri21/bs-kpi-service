@@ -1,4 +1,4 @@
-package de.thws.fiw.bs.kpi.domain.model;
+package de.thws.fiw.bs.kpi.application.domain.model;
 
 import org.junit.jupiter.api.Test;
 
