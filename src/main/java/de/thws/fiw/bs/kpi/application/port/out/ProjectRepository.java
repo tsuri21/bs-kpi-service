@@ -1,4 +1,4 @@
-package de.thws.fiw.bs.kpi.application.port.out.persistence;
+package de.thws.fiw.bs.kpi.application.port.out;
 
 import de.thws.fiw.bs.kpi.application.domain.model.Project;
 
