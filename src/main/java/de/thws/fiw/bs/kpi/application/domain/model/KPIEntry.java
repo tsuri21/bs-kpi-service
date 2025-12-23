@@ -1,54 +1,46 @@
 package de.thws.fiw.bs.kpi.application.domain.model;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
+import java.time.Clock;
+import java.time.Instant;
+import java.util.Objects;
 
 public class KPIEntry {
 
-    private UUID id;
-    private LocalDateTime timestamp;
-    private double value;
+    private final KPIEntryId id;
+    private final KPIAssignmentId kpiAssignmentId;
+    private final Instant timestamp;
+    private final double value;
 
-    public KPIEntry() {
-    }
-
-    public KPIEntry(UUID id, LocalDateTime timestamp, double value) {
-        this.id = id;
-        this.timestamp = validateTimestamp(timestamp);
+    public KPIEntry(KPIEntryId id, KPIAssignmentId kpiAssignmentId, Instant timestamp, double value, Clock clock) {
+        this.id = Objects.requireNonNull(id, "KPIEntry id must not be null");
+        this.kpiAssignmentId = Objects.requireNonNull(kpiAssignmentId, "KPIAssignment id must not be null");
+        this.timestamp = validateTimestamp(timestamp, clock);
         this.value = value;
     }
 
-    public UUID getId() {
+    public KPIEntryId getId() {
         return id;
     }
 
-    public void setId(UUID id) {
-        this.id = id;
+    public KPIAssignmentId getKpiAssignmentId() {
+        return kpiAssignmentId;
     }
 
-    public LocalDateTime getTimestamp() {
+    public Instant getTimestamp() {
         return timestamp;
-    }
-
-    public void setTimestamp(LocalDateTime timestamp) {
-        this.timestamp = validateTimestamp(timestamp);
     }
 
     public double getValue() {
         return value;
     }
 
-    public void setValue(double value) {
-        this.value = value;
-    }
+    private static Instant validateTimestamp(Instant ts, Clock clock) {
+        Objects.requireNonNull(clock, "Clock must not be null");
+        Objects.requireNonNull(ts, "Timestamp must not be null");
 
-    private static LocalDateTime validateTimestamp(LocalDateTime timestamp) {
-        if (timestamp == null) {
-            throw new IllegalArgumentException("Timestamp must not be null");
-        }
-        if (timestamp.isAfter(LocalDateTime.now())) {
+        if (ts.isAfter(Instant.now(clock))) {
             throw new IllegalArgumentException("Timestamp must not be in the future");
         }
-        return timestamp;
+        return ts;
     }
 }

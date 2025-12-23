@@ -2,46 +2,57 @@ package de.thws.fiw.bs.kpi.application.domain.model;
 
 import org.junit.jupiter.api.Test;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class KPIEntryTest {
 
-    private final UUID id = UUID.randomUUID();
+    private static final Clock FIXED_CLOCK = Clock.fixed(Instant.parse("2025-01-01T10:00:00Z"), ZoneOffset.UTC);
 
     @Test
-    void shouldCreateKpiEntryWithValidData() {
-        LocalDateTime timestamp = LocalDateTime.now().minusMinutes(1);
-        double value = 42.5;
+    void constructorRejectsNullArguments() {
+        KPIEntryId id = KPIEntryId.newId();
+        KPIAssignmentId assignmentId = KPIAssignmentId.newId();
+        Instant ts = Instant.parse("2025-01-01T09:59:00Z");
 
-        KPIEntry entry = new KPIEntry(id, timestamp, value);
-
-        assertEquals(id, entry.getId());
-        assertEquals(timestamp, entry.getTimestamp());
-        assertEquals(value, entry.getValue());
+        assertThrows(NullPointerException.class,
+                () -> new KPIEntry(null, assignmentId, ts, 10.0, FIXED_CLOCK));
+        assertThrows(NullPointerException.class,
+                () -> new KPIEntry(id, null, ts, 10.0, FIXED_CLOCK));
+        assertThrows(NullPointerException.class,
+                () -> new KPIEntry(id, assignmentId, null, 10.0, FIXED_CLOCK));
+        assertThrows(NullPointerException.class,
+                () -> new KPIEntry(id, assignmentId, ts, 10.0, null));
     }
 
     @Test
-    void shouldThrowExceptionWhenTimestampIsNull() {
-        IllegalArgumentException ex = assertThrows(
-                IllegalArgumentException.class,
-                () -> new KPIEntry(id, null, 10.0)
-        );
-
-        assertEquals("Timestamp must not be null", ex.getMessage());
-    }
-
-    @Test
-    void shouldThrowExceptionWhenTimestampIsInFuture() {
-        LocalDateTime futureTimestamp = LocalDateTime.now().plusMinutes(1);
+    void rejectsTimestampInFuture() {
+        KPIEntryId id = KPIEntryId.newId();
+        KPIAssignmentId assignmentId = KPIAssignmentId.newId();
+        Instant future = Instant.parse("2025-01-01T10:00:01Z");
 
         IllegalArgumentException ex = assertThrows(
                 IllegalArgumentException.class,
-                () -> new KPIEntry(id, futureTimestamp, 10.0)
+                () -> new KPIEntry(id, assignmentId, future, 10.0, FIXED_CLOCK)
         );
 
         assertEquals("Timestamp must not be in the future", ex.getMessage());
+    }
+
+    @Test
+    void createsEntryForValidTimestamp() {
+        KPIEntryId id = KPIEntryId.newId();
+        KPIAssignmentId assignmentId = KPIAssignmentId.newId();
+        Instant past = Instant.parse("2025-01-01T09:59:00Z");
+
+        KPIEntry entry = new KPIEntry(id, assignmentId, past, 42.5, FIXED_CLOCK);
+
+        assertEquals(id, entry.getId());
+        assertEquals(assignmentId, entry.getKpiAssignmentId());
+        assertEquals(past, entry.getTimestamp());
+        assertEquals(42.5, entry.getValue());
     }
 }

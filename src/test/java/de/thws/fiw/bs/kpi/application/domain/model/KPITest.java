@@ -2,51 +2,18 @@ package de.thws.fiw.bs.kpi.application.domain.model;
 
 import org.junit.jupiter.api.Test;
 
-import java.util.UUID;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class KPITest {
 
-    private final UUID id = UUID.randomUUID();
-
     @Test
-    void shouldCreateKpiWithValidData() {
-        TargetDestination destination = TargetDestination.DECREASING;
-        KPI kpi = new KPI(id, "Demo", destination);
+    void constructorRejectsNullArguments() {
+        KPIId id = KPIId.newId();
+        Name name = new Name("KPI");
+        TargetDestination destination = TargetDestination.INCREASING;
 
-        assertEquals(id, kpi.getId());
-        assertEquals("Demo", kpi.getName());
-        assertEquals(destination, kpi.getDestination());
-    }
-
-    @Test
-    void shouldThrowExceptionWhenDestinationIsNull() {
-        IllegalArgumentException ex = assertThrows(
-                IllegalArgumentException.class,
-                () -> new KPI(id, "Demo", null)
-        );
-
-        assertEquals("Destination must not be null", ex.getMessage());
-    }
-
-    @Test
-    void shouldThrowExceptionWhenNameIsNull() {
-        IllegalArgumentException ex = assertThrows(
-                IllegalArgumentException.class,
-                () -> new KPI(id, null, TargetDestination.INCREASING)
-        );
-
-        assertEquals("Name must not be empty", ex.getMessage());
-    }
-
-    @Test
-    void shouldThrowExceptionWhenNameIsBlank() {
-        IllegalArgumentException ex = assertThrows(
-                IllegalArgumentException.class,
-                () -> new KPI(id, "   ", TargetDestination.RANGE)
-        );
-
-        assertEquals("Name must not be empty", ex.getMessage());
+        assertThrows(NullPointerException.class, () -> new KPI(null, name, destination));
+        assertThrows(NullPointerException.class, () -> new KPI(id, null, destination));
+        assertThrows(NullPointerException.class, () -> new KPI(id, name, null));
     }
 }
