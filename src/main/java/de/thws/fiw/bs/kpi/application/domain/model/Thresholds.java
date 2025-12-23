@@ -8,7 +8,7 @@ public final class Thresholds {
     private final double red;
 
     private Thresholds(double green, double yellow, double red) {
-        if (!Double.isNaN(green) && !Double.isNaN(yellow) && !Double.isNaN(red)) {
+        if (Double.isNaN(green) || Double.isNaN(yellow) || Double.isNaN(red)) {
             throw new IllegalArgumentException("Thresholds must be valid numbers");
         }
         this.green = green;
