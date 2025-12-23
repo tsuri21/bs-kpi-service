@@ -3,9 +3,9 @@ package de.thws.fiw.bs.kpi.application.domain.model;
 import java.net.URI;
 import java.util.Objects;
 
-public record RepoUrl(URI url) {
+public record RepoUrl(URI value) {
     public RepoUrl {
-        validateRepoUrl(url);
+        validateRepoUrl(value);
     }
 
     public static RepoUrl parse(String url) {
