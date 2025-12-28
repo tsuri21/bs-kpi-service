@@ -1,18 +1,18 @@
 package de.thws.fiw.bs.kpi.application.port.out;
 
+import de.thws.fiw.bs.kpi.application.domain.model.Name;
 import de.thws.fiw.bs.kpi.application.domain.model.Project;
+import de.thws.fiw.bs.kpi.application.domain.model.ProjectId;
+import de.thws.fiw.bs.kpi.application.domain.model.RepoUrl;
+import de.thws.fiw.bs.kpi.application.port.Page;
+import de.thws.fiw.bs.kpi.application.port.PageRequest;
 
-import java.net.URI;
-import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
-interface ProjectRepository {
-    UUID create(Project p);
-    Optional<Project> findById(UUID id);
-    Optional<Project> findByUrl(URI repoUrl);
-    List<Project> findAll();
-    boolean existsById(UUID id);
-    void update(Project p);
-    void deleteById(UUID id);
+public interface ProjectRepository {
+    Optional<Project> findById(ProjectId id);
+    Page<Project> findByFilter(RepoUrl repoUrl, Name name, PageRequest pageRequest);
+    void save(Project project);
+    void update(Project project);
+    void delete(ProjectId id);
 }
