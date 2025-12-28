@@ -15,18 +15,23 @@ public class ProjectEntity {
     @Column(nullable = false, unique = true)
     private String name;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private URI repoUrl;
 
     public ProjectEntity() {}
 
-    public ProjectEntity(String name, URI repoUrl) {
+    public ProjectEntity(UUID id, String name, URI repoUrl) {
+        id = this.id;
         this.name = name;
         this.repoUrl = repoUrl;
     }
 
     public UUID getId() {
         return id;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
     }
 
     public String getName() {
