@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class KPIAssignmentTest {
 
     @Test
-    void constructorRejectsNullArguments() {
+    void init_anyArgumentNull_throwsException() {
         KPIAssignmentId id = KPIAssignmentId.newId();
         Thresholds thresholds = Thresholds.forDestination(TargetDestination.INCREASING, 50, 30, 15);
         KPIId kpiId = KPIId.newId();

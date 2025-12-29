@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class RepoUrlTest {
 
     @Test
-    void rejectsNullUrlWhenParsing() {
+    void parse_nullUrl_throwsNpe() {
         NullPointerException ex = assertThrows(
                 NullPointerException.class,
                 () -> RepoUrl.parse(null)
@@ -19,7 +19,7 @@ class RepoUrlTest {
     }
 
     @Test
-    void rejectsInvalidUriWhenParsing() {
+    void parse_invalidUri_throwsIae() {
         IllegalArgumentException ex = assertThrows(
                 IllegalArgumentException.class,
                 () -> RepoUrl.parse("not a uri")
@@ -29,7 +29,7 @@ class RepoUrlTest {
     }
 
     @Test
-    void rejectsUnsupportedScheme() {
+    void init_unsupportedScheme_throwsIae() {
         IllegalArgumentException ex = assertThrows(
                 IllegalArgumentException.class,
                 () -> new RepoUrl(URI.create("ftp://github.com/test/repo"))
@@ -39,7 +39,7 @@ class RepoUrlTest {
     }
 
     @Test
-    void rejectsMissingHost() {
+    void init_missingHost_throwsIae() {
         IllegalArgumentException ex = assertThrows(
                 IllegalArgumentException.class,
                 () -> new RepoUrl(URI.create("https:///test/repo"))
@@ -49,7 +49,7 @@ class RepoUrlTest {
     }
 
     @Test
-    void rejectsMissingPath() {
+    void init_missingPath_throwsIae() {
         IllegalArgumentException ex = assertThrows(
                 IllegalArgumentException.class,
                 () -> new RepoUrl(URI.create("https://github.com"))
@@ -59,7 +59,7 @@ class RepoUrlTest {
     }
 
     @Test
-    void createsRepoUrlForValidHttpsUrl() {
+    void parse_validHttpsUrl_returnsRepoUrl() {
         RepoUrl repoUrl = RepoUrl.parse("https://github.com/test/repo");
 
         assertEquals(URI.create("https://github.com/test/repo"), repoUrl.value());

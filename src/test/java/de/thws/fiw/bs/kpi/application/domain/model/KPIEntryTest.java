@@ -13,7 +13,7 @@ class KPIEntryTest {
     private static final Clock FIXED_CLOCK = Clock.fixed(Instant.parse("2025-01-01T10:00:00Z"), ZoneOffset.UTC);
 
     @Test
-    void constructorRejectsNullArguments() {
+    void init_anyArgumentNull_throwsException() {
         KPIEntryId id = KPIEntryId.newId();
         KPIAssignmentId assignmentId = KPIAssignmentId.newId();
         Instant ts = Instant.parse("2025-01-01T09:59:00Z");
@@ -29,7 +29,7 @@ class KPIEntryTest {
     }
 
     @Test
-    void rejectsTimestampInFuture() {
+    void init_timestampInFuture_throwsException() {
         KPIEntryId id = KPIEntryId.newId();
         KPIAssignmentId assignmentId = KPIAssignmentId.newId();
         Instant future = Instant.parse("2025-01-01T10:00:01Z");
@@ -43,7 +43,7 @@ class KPIEntryTest {
     }
 
     @Test
-    void createsEntryForValidTimestamp() {
+    void init_validTimestamp_success() {
         KPIEntryId id = KPIEntryId.newId();
         KPIAssignmentId assignmentId = KPIAssignmentId.newId();
         Instant past = Instant.parse("2025-01-01T09:59:00Z");
