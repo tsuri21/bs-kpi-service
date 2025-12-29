@@ -11,7 +11,7 @@ import java.util.Optional;
 
 public interface ProjectRepository {
     Optional<Project> findById(ProjectId id);
-    Page<Project> findByFilter(RepoUrl repoUrl, Name name, PageRequest pageRequest);
+    Page<Project> findByFilter(Name name, RepoUrl repoUrl, PageRequest pageRequest);
     void save(Project project);
     void update(Project project);
     void delete(ProjectId id);

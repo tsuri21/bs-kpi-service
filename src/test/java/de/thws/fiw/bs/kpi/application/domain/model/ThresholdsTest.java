@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class ThresholdsTest {
 
     @Test
-    void rejectsNullTargetDestination() {
+    void forDestination_nullDestination_throwsNpe() {
         assertThrows(
                 NullPointerException.class,
                 () -> Thresholds.forDestination(null, 100, 70, 40)
@@ -15,7 +15,15 @@ class ThresholdsTest {
     }
 
     @Test
-    void createsThresholdsForIncreasingDestination() {
+    void forDestination_nanValue_throwsIae() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> Thresholds.forDestination(TargetDestination.INCREASING, Double.NaN, 70, 40)
+        );
+    }
+
+    @Test
+    void forDestination_increasingValid_success() {
         Thresholds thresholds = Thresholds.forDestination(TargetDestination.INCREASING, 100, 70, 40);
 
         assertEquals(100, thresholds.getGreen());
@@ -24,7 +32,7 @@ class ThresholdsTest {
     }
 
     @Test
-    void rejectsInvalidThresholdsForIncreasingDestination() {
+    void forDestination_increasingOutOfOrder_throwsIae() {
         assertThrows(
                 IllegalArgumentException.class,
                 () -> Thresholds.forDestination(TargetDestination.INCREASING, 50, 70, 40)
@@ -32,7 +40,7 @@ class ThresholdsTest {
     }
 
     @Test
-    void createsThresholdsForDecreasingDestination() {
+    void forDestination_decreasingValid_success() {
         Thresholds thresholds = Thresholds.forDestination(TargetDestination.DECREASING, 40, 70, 100);
 
         assertEquals(40, thresholds.getGreen());
@@ -41,7 +49,7 @@ class ThresholdsTest {
     }
 
     @Test
-    void rejectsInvalidThresholdsForDecreasingDestination() {
+    void forDestination_decreasingOutOfOrder_throwsIae() {
         assertThrows(
                 IllegalArgumentException.class,
                 () -> Thresholds.forDestination(TargetDestination.DECREASING, 50, 70, 40)
@@ -49,7 +57,7 @@ class ThresholdsTest {
     }
 
     @Test
-    void createsThresholdsForRangeDestination() {
+    void forDestination_rangeValid_success() {
         Thresholds thresholds = Thresholds.forDestination(TargetDestination.RANGE, 50, 0.5, 2.3);
 
         assertEquals(50, thresholds.getGreen());
@@ -58,18 +66,10 @@ class ThresholdsTest {
     }
 
     @Test
-    void rejectsInvalidThresholdsForRangeDestination() {
+    void forDestination_rangeOutOfOrder_throwsIae() {
         assertThrows(
                 IllegalArgumentException.class,
                 () -> Thresholds.forDestination(TargetDestination.RANGE, 25, 1.5, 0.5)
-        );
-    }
-
-    @Test
-    void rejectsNaNThresholdValues() {
-        assertThrows(
-                IllegalArgumentException.class,
-                () -> Thresholds.forDestination(TargetDestination.INCREASING, Double.NaN, 70, 40)
         );
     }
 }

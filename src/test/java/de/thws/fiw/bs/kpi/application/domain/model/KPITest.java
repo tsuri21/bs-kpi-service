@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class KPITest {
 
     @Test
-    void constructorRejectsNullArguments() {
+    void init_anyArgumentNull_throwsException() {
         KPIId id = KPIId.newId();
         Name name = new Name("KPI");
         TargetDestination destination = TargetDestination.INCREASING;

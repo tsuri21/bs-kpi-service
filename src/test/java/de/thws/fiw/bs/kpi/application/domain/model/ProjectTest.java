@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class ProjectTest {
 
     @Test
-    void constructorRejectsNullArguments() {
+    void init_anyArgumentNull_throwsException() {
         ProjectId id = ProjectId.newId();
         Name name = new Name("Project");
         RepoUrl repoUrl = RepoUrl.parse("https://github.com/test/repo");

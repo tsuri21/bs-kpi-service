@@ -2,7 +2,8 @@ package de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.adapter;
 
 import de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.entity.ProjectEntity;
 import de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.mapper.ProjectMapper;
-import de.thws.fiw.bs.kpi.application.domain.exception.EntityAlreadyExistsException;
+import de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.util.ExceptionUtils;
+import de.thws.fiw.bs.kpi.application.domain.exception.AlreadyExistsException;
 import de.thws.fiw.bs.kpi.application.domain.exception.InfrastructureException;
 import de.thws.fiw.bs.kpi.application.domain.model.Name;
 import de.thws.fiw.bs.kpi.application.domain.model.Project;
@@ -20,7 +21,6 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import jakarta.transaction.Transactional;
-import org.hibernate.exception.ConstraintViolationException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,7 +46,7 @@ public class ProjectRepositoryAdapter implements ProjectRepository {
     }
 
     @Override
-    public Page<Project> findByFilter(RepoUrl repoUrl, Name name, PageRequest pageRequest) {
+    public Page<Project> findByFilter(Name name, RepoUrl repoUrl, PageRequest pageRequest) {
         try {
             CriteriaBuilder cb = em.getCriteriaBuilder();
             long total = countSearchResults(cb, repoUrl, name);
@@ -65,11 +65,15 @@ public class ProjectRepositoryAdapter implements ProjectRepository {
     @Override
     @Transactional
     public void save(Project project) {
+        if (project == null) {
+            throw new InfrastructureException("Project must not be null");
+        }
         try {
             em.persist(mapper.toPersistenceModel(project));
+            em.flush();
         } catch (PersistenceException ex) {
-            if (ex.getCause() instanceof ConstraintViolationException) {
-                throw new EntityAlreadyExistsException(project.getName().value(), ex);
+            if (ExceptionUtils.isConstraintViolation(ex)) {
+                throw new AlreadyExistsException("Project with name or repoUrl already exists", ex);
             }
             throw new InfrastructureException("Failed to save new project: " + project.getName().value(), ex);
         }
@@ -78,8 +82,16 @@ public class ProjectRepositoryAdapter implements ProjectRepository {
     @Override
     @Transactional
     public void update(Project project) {
+        if (project == null) {
+            throw new InfrastructureException("Project must not be null");
+        }
         try {
+            ProjectEntity existingProject = em.find(ProjectEntity.class, project.getId().value());
+            if (existingProject == null) {
+                throw new InfrastructureException("Cannot update non existing project with ID: " + project.getId().value());
+            }
             em.merge(mapper.toPersistenceModel(project));
+            em.flush();
         } catch (PersistenceException ex) {
             throw new InfrastructureException("Failed to update project with ID: " + project.getId().value(), ex);
         }
@@ -88,9 +100,14 @@ public class ProjectRepositoryAdapter implements ProjectRepository {
     @Override
     @Transactional
     public void delete(ProjectId id) {
+        if (id == null) {
+            throw new InfrastructureException("Project id must not be null");
+        }
         try {
             ProjectEntity project = em.find(ProjectEntity.class, id.value());
-            em.remove(project);
+            if (project != null) {
+                em.remove(project);
+            }
         } catch (PersistenceException ex) {
             throw new InfrastructureException("Failed to delete project with ID: " + id.value(), ex);
         }
@@ -121,8 +138,8 @@ public class ProjectRepositoryAdapter implements ProjectRepository {
         List<Predicate> predicates = new ArrayList<>();
 
         if (repoUrl != null) {
-            String urlPattern = "%" + repoUrl.value().toString().toLowerCase() + "%";
-            predicates.add(cb.like(cb.lower(root.get("repoUrl")), urlPattern));
+            String urlPattern = "%" + repoUrl.toString().toLowerCase() + "%";
+            predicates.add(cb.like(cb.lower(root.get("repoUrl").as(String.class)), urlPattern));
         }
 
         if (name != null) {
