@@ -9,7 +9,6 @@ import java.util.UUID;
 public class ProjectEntity {
 
     @Id
-    @GeneratedValue
     private UUID id;
 
     @Column(nullable = false, unique = true)
@@ -21,7 +20,7 @@ public class ProjectEntity {
     public ProjectEntity() {}
 
     public ProjectEntity(UUID id, String name, URI repoUrl) {
-        id = this.id;
+        this.id = id;
         this.name = name;
         this.repoUrl = repoUrl;
     }
