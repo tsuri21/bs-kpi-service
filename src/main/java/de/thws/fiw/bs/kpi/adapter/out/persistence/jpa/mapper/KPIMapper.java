@@ -3,6 +3,7 @@ package de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.mapper;
 import de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.entity.KPIEntity;
 import de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.entity.ProjectEntity;
 import de.thws.fiw.bs.kpi.application.domain.model.*;
+import jakarta.inject.Singleton;
 
 import java.util.List;
 import java.util.stream.Collectors;
