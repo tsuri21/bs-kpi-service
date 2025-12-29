@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 @Singleton
 public class ProjectMapper {
     public ProjectEntity toPersistenceModel(Project project) {
+        if (project == null) return null;
         return new ProjectEntity(
                 project.getId().value(),
                 project.getName().value(),
@@ -25,6 +26,7 @@ public class ProjectMapper {
     }
 
     public Project toDomainModel(ProjectEntity projectEntity) {
+        if (projectEntity == null) return null;
         return new Project(
                 new ProjectId(projectEntity.getId()),
                 new Name(projectEntity.getName()),
