@@ -22,7 +22,7 @@
         <surefire-plugin.version>3.5.3</surefire-plugin.version>
         <failsafe-plugin.version>3.5.3</failsafe-plugin.version>
         <docker-maven-plugin.version>0.48.0</docker-maven-plugin.version>
-        <it.backend.wait.url>http://localhost:8080/projects</it.backend.wait.url>
+        <it.backend.wait.url>http://localhost:8080/api</it.backend.wait.url>
         <skipITs>true</skipITs>
     </properties>
 
