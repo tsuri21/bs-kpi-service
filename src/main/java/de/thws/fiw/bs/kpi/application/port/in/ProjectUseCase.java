@@ -7,14 +7,16 @@ import de.thws.fiw.bs.kpi.application.domain.model.RepoUrl;
 import de.thws.fiw.bs.kpi.application.port.Page;
 import de.thws.fiw.bs.kpi.application.port.PageRequest;
 
-public interface ProjectUseCase {
-    Project readById(ProjectId id);
+import java.util.Optional;
 
-    Page<Project> readAll(RepoUrl repoUrl, Name name, PageRequest pageRequest);
+public interface ProjectUseCase {
+    Optional<Project> readById(ProjectId id);
+
+    Page<Project> readAll(Name name, RepoUrl repoUrl, PageRequest pageRequest);
 
     void create(Project project);
 
-    void update(ProjectId id, Project project);
+    void update(Project project);
 
     void delete(ProjectId id);
 }
