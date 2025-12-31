@@ -17,6 +17,10 @@ public record RepoUrl(URI value) {
         }
     }
 
+    public static RepoUrl valueOf(String url) {
+        return parse(url);
+    }
+
     private static void validateRepoUrl(URI url) {
         Objects.requireNonNull(url, "Repository URL must not be null");
 
