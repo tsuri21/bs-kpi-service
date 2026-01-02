@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class ThresholdsTest {
 
     @Test
-    void forDestination_nullDestination_throwsNpe() {
+    void forDestination_nullDestination_throwsException() {
         assertThrows(
                 NullPointerException.class,
                 () -> Thresholds.forDestination(null, 100, 70, 40)
@@ -15,7 +15,7 @@ class ThresholdsTest {
     }
 
     @Test
-    void forDestination_nanValue_throwsIae() {
+    void forDestination_nanValue_throwsException() {
         assertThrows(
                 IllegalArgumentException.class,
                 () -> Thresholds.forDestination(TargetDestination.INCREASING, Double.NaN, 70, 40)
@@ -32,7 +32,7 @@ class ThresholdsTest {
     }
 
     @Test
-    void forDestination_increasingOutOfOrder_throwsIae() {
+    void forDestination_increasingOutOfOrder_throwsException() {
         assertThrows(
                 IllegalArgumentException.class,
                 () -> Thresholds.forDestination(TargetDestination.INCREASING, 50, 70, 40)
@@ -49,7 +49,7 @@ class ThresholdsTest {
     }
 
     @Test
-    void forDestination_decreasingOutOfOrder_throwsIae() {
+    void forDestination_decreasingOutOfOrder_throwsException() {
         assertThrows(
                 IllegalArgumentException.class,
                 () -> Thresholds.forDestination(TargetDestination.DECREASING, 50, 70, 40)
@@ -66,7 +66,7 @@ class ThresholdsTest {
     }
 
     @Test
-    void forDestination_rangeOutOfOrder_throwsIae() {
+    void forDestination_rangeOutOfOrder_throwsException() {
         assertThrows(
                 IllegalArgumentException.class,
                 () -> Thresholds.forDestination(TargetDestination.RANGE, 25, 1.5, 0.5)
