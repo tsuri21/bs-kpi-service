@@ -1,7 +1,7 @@
 package de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.adapter;
 
 import de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.entity.ProjectEntity;
-import de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.mapper.ProjectMapper;
+import de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.mapper.ProjectJpaMapper;
 import de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.util.ExceptionUtils;
 import de.thws.fiw.bs.kpi.application.domain.exception.AlreadyExistsException;
 import de.thws.fiw.bs.kpi.application.domain.exception.InfrastructureException;
@@ -30,7 +30,7 @@ import java.util.Optional;
 public class ProjectRepositoryAdapter implements ProjectRepository {
 
     @Inject
-    ProjectMapper mapper;
+    ProjectJpaMapper mapper;
 
     @Inject
     EntityManager em;
@@ -39,7 +39,7 @@ public class ProjectRepositoryAdapter implements ProjectRepository {
     public Optional<Project> findById(ProjectId id) {
         try {
             ProjectEntity project = em.find(ProjectEntity.class, id.value());
-            return Optional.ofNullable(mapper.toDomainModel(project));
+            return Optional.ofNullable(project).map(mapper::toDomainModel);
         } catch (PersistenceException ex) {
             throw new InfrastructureException("Database access failed for ID: " + id.value(), ex);
         }
