@@ -18,10 +18,11 @@ public class KPIEntity {
     @Column(nullable = false, unique = true)
     private String name;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private TargetDestination destination;
 
-    public KPIEntity() {}
+    public KPIEntity() {
+    }
 
     public KPIEntity(UUID id, String name, TargetDestination destination) {
         this.id = id;
