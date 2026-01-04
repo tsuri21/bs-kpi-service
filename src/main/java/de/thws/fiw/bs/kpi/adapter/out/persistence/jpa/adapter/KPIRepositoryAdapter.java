@@ -35,45 +35,44 @@ public class KPIRepositoryAdapter implements KPIRepository {
     EntityManager em;
 
     @Override
-    public Optional<KPI> findById(KPIId id){
-        try{
+    public Optional<KPI> findById(KPIId id) {
+        try {
             KPIEntity kpi = em.find(KPIEntity.class, id.value());
             return Optional.ofNullable(mapper.toDomainModel(kpi));
-        }
-        catch(PersistenceException ex){
+        } catch (PersistenceException ex) {
             throw new InfrastructureException("Database access failed for ID: " + id.value(), ex);
         }
     }
 
     @Override
-    public Page<KPI> findByFilter(Name name, PageRequest pageRequest){
-        try{
+    public Page<KPI> findByFilter(Name name, PageRequest pageRequest) {
+        try {
             CriteriaBuilder cb = em.getCriteriaBuilder();
             long total = countSearchResults(cb, name);
 
-            if (total == 0){
+            if (total == 0) {
                 return new Page<>(List.of(), pageRequest, 0);
             }
 
             List<KPIEntity> entities = fetchPageResults(cb, name, pageRequest);
             return new Page<>(mapper.toDomainModels(entities), pageRequest, total);
-        } catch(PersistenceException ex){
+        } catch (PersistenceException ex) {
             throw new InfrastructureException("Failed to execute KPI filter query", ex);
         }
     }
 
     @Override
     @Transactional
-    public void save(KPI kpi){
-        if(kpi == null){
+    public void save(KPI kpi) {
+        if (kpi == null) {
             throw new InfrastructureException("KPI must not be null");
         }
-        try{
+        try {
             em.persist(mapper.toPersistenceModel(kpi));
             em.flush();
-        } catch(PersistenceException ex){
-            if(ExceptionUtils.isConstraintViolation(ex)){
-                throw new AlreadyExistsException("Project with name already exists", ex);
+        } catch (PersistenceException ex) {
+            if (ExceptionUtils.isConstraintViolation(ex)) {
+                throw new AlreadyExistsException("KPI with name already exists", ex);
             }
             throw new InfrastructureException("Failed to save KPI: " + kpi.getName().value(), ex);
         }
@@ -81,34 +80,34 @@ public class KPIRepositoryAdapter implements KPIRepository {
 
     @Override
     @Transactional
-    public void update(KPI kpi){
-        if(kpi == null){
+    public void update(KPI kpi) {
+        if (kpi == null) {
             throw new InfrastructureException("KPI must not be null");
         }
-        try{
+        try {
             KPIEntity exsitingKPI = em.find(KPIEntity.class, kpi.getId().value());
-            if(exsitingKPI == null){
+            if (exsitingKPI == null) {
                 throw new InfrastructureException("Cannot update non existing KPI with ID: " + kpi.getId().value());
             }
             em.merge(mapper.toPersistenceModel(kpi));
             em.flush();
-        } catch(PersistenceException ex){
+        } catch (PersistenceException ex) {
             throw new InfrastructureException("Failed to update KPI with ID: " + kpi.getId().value(), ex);
         }
     }
 
     @Override
     @Transactional
-    public void delete(KPIId id){
-        if(id == null){
+    public void delete(KPIId id) {
+        if (id == null) {
             throw new InfrastructureException("KPI must not be null");
         }
-        try{
+        try {
             KPIEntity kpi = em.find(KPIEntity.class, id.value());
-            if(kpi != null){
+            if (kpi != null) {
                 em.remove(kpi);
             }
-        } catch(PersistenceException ex){
+        } catch (PersistenceException ex) {
             throw new InfrastructureException("Failed to delete KPI: " + id.value(), ex);
         }
     }
