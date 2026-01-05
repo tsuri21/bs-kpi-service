@@ -145,7 +145,7 @@ class HypermediaLinkServiceTest {
         Link result = service.createGetAllLink(TestResource.class);
 
         assertEquals(BASE_URI + "tests", result.getUri().toString());
-        assertEquals("getAllTest", result.getRel());
+        assertEquals("getTestItems", result.getRel());
         assertEquals("GET", result.getParams().get("method"));
     }
 
@@ -155,7 +155,7 @@ class HypermediaLinkServiceTest {
         Link result = service.createGetAllLink();
 
         assertEquals(BASE_URI + "tests", result.getUri().toString());
-        assertEquals("getAllTest", result.getRel());
+        assertEquals("getTestItems", result.getRel());
         assertEquals("GET", result.getParams().get("method"));
     }
 
@@ -231,7 +231,7 @@ class HypermediaLinkServiceTest {
 
         String result = service.createSearchTemplateLink(TestResource.class, queryParams);
 
-        String expected = "<" + BASE_URI + "tests{?name,category}>; method=\"GET\"; rel=\"searchTest\"; type=\"application/json\"";
+        String expected = "<" + BASE_URI + "tests{?name,category}>; method=\"GET\"; rel=\"searchTestItems\"; type=\"application/json\"";
         assertEquals(expected, result);
     }
 
@@ -241,7 +241,7 @@ class HypermediaLinkServiceTest {
 
         String result = service.createSearchTemplateLink("q");
 
-        String expected = "<" + BASE_URI + "tests{?q}>; method=\"GET\"; rel=\"searchTest\"; type=\"application/json\"";
+        String expected = "<" + BASE_URI + "tests{?q}>; method=\"GET\"; rel=\"searchTestItems\"; type=\"application/json\"";
         assertEquals(expected, result);
     }
 

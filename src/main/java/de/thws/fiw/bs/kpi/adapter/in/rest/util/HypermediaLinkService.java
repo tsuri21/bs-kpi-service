@@ -44,7 +44,7 @@ public class HypermediaLinkService {
     }
 
     public Link createGetAllLink(Class<?> pathClass) {
-        return createCustomLink(pathClass, "getAll" + getRelEntityName(pathClass), "GET");
+        return createCustomLink(pathClass, "get" + getRelEntityName(pathClass) + "Items", "GET");
     }
 
     public Link createGetAllLink() {
@@ -78,7 +78,7 @@ public class HypermediaLinkService {
     public String createSearchTemplateLink(Class<?> pathClass, String... params) {
         String base = uriInfo.getBaseUriBuilder().path(pathClass).build().toString();
         String queryParams = String.join(",", params);
-        String rel = "search" + getRelEntityName(pathClass);
+        String rel = "search" + getRelEntityName(pathClass) + "Items";
         String type = getMediaType();
         return String.format("<%s{?%s}>; method=\"GET\"; rel=\"%s\"; type=\"%s\"", base, queryParams, rel, type);
     }
