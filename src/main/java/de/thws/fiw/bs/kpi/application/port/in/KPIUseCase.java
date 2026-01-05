@@ -7,7 +7,7 @@ import de.thws.fiw.bs.kpi.application.port.PageRequest;
 import java.util.Optional;
 
 public interface KPIUseCase {
-    Optional<KPI> readById(ProjectId id);
+    Optional<KPI> readById(KPIId id);
 
     Page<KPI> readAll(Name name, PageRequest pageRequest);
 
