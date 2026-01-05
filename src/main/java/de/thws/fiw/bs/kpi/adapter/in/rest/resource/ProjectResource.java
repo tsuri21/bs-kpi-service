@@ -41,12 +41,13 @@ public class ProjectResource {
         ProjectDTO projectDTO = mapper.toApiModel(project);
 
         linkService.setSelfLink(projectDTO);
+        Link self = linkService.createSelfLink(id);
         Link delete = linkService.createDeleteLink(id);
         Link update = linkService.createUpdateLink(id);
         Link allProjects = linkService.createGetAllLink();
 
         return Response.ok(projectDTO)
-                .links(delete, update, allProjects)
+                .links(self, delete, update, allProjects)
                 .build();
     }
 
