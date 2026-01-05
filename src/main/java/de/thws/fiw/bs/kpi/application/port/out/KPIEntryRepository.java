@@ -10,7 +10,7 @@ import java.util.Optional;
 public interface KPIEntryRepository {
     Optional<KPIEntry> findById(KPIEntryId id);
 
-    Page<KPIEntry> findByFilter(KPIAssignmentId id, Instant timestamp, PageRequest pageRequest);
+    Page<KPIEntry> findByFilter(KPIAssignmentId id, Instant from, Instant to, PageRequest pageRequest);
 
     void save(KPIEntry kpiEntry);
 

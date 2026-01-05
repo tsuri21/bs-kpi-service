@@ -10,7 +10,7 @@ import java.util.Optional;
 public interface KPIEntryUseCase {
     Optional<KPIEntry> readById(KPIEntryId id);
 
-    Page<KPIEntry> readAll(KPIAssignmentId id, Instant timestamp, PageRequest pageRequest);
+    Page<KPIEntry> readAll(KPIAssignmentId id, Instant from, Instant to, PageRequest pageRequest);
 
     void create(KPIEntry kpiEntry);
 
