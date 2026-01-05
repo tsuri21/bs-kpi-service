@@ -7,30 +7,24 @@ import de.thws.fiw.bs.kpi.application.domain.model.ProjectId;
 import de.thws.fiw.bs.kpi.application.domain.model.RepoUrl;
 import jakarta.inject.Singleton;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 @Singleton
-public class ProjectMapper {
+public class ProjectJpaMapper implements PersistenceMapper<Project, ProjectEntity> {
+
+    @Override
+    public Project toDomainModel(ProjectEntity entity) {
+        return new Project(
+                new ProjectId(entity.getId()),
+                new Name(entity.getName()),
+                new RepoUrl(entity.getRepoUrl())
+        );
+    }
+
+    @Override
     public ProjectEntity toPersistenceModel(Project project) {
-        if (project == null) return null;
         return new ProjectEntity(
                 project.getId().value(),
                 project.getName().value(),
                 project.getRepoUrl().value()
-        );
-    }
-
-    public List<Project> toDomainModels(List<ProjectEntity> projectEntities) {
-        return projectEntities.stream().map(this::toDomainModel).collect(Collectors.toList());
-    }
-
-    public Project toDomainModel(ProjectEntity projectEntity) {
-        if (projectEntity == null) return null;
-        return new Project(
-                new ProjectId(projectEntity.getId()),
-                new Name(projectEntity.getName()),
-                new RepoUrl(projectEntity.getRepoUrl())
         );
     }
 }

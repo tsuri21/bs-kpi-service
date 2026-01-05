@@ -5,15 +5,16 @@ import de.thws.fiw.bs.kpi.application.port.Page;
 import de.thws.fiw.bs.kpi.application.port.PageRequest;
 
 import java.time.Instant;
+import java.util.Optional;
 
 public interface KPIEntryUseCase {
-    KPIEntry readById(KPIEntryId id);
+    Optional<KPIEntry> readById(KPIEntryId id);
 
     Page<KPIEntry> readAll(KPIAssignmentId id, Instant timestamp, PageRequest pageRequest);
 
     void create(KPIEntry kpiEntry);
 
-    void update(KPIEntryId id, KPIEntry kpiEntry);
+    void update(KPIEntry kpiEntry);
 
     void delete(KPIEntryId id);
 }

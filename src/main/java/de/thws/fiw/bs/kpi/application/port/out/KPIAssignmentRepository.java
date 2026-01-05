@@ -8,8 +8,12 @@ import java.util.Optional;
 
 public interface KPIAssignmentRepository {
     Optional<KPIAssignment> findById(KPIAssignmentId id);
+
     Page<KPIAssignment> findByFilter(KPIId kpiId, ProjectId projectId, PageRequest pageRequest);
+
     void save(KPIAssignment kpiAssignment);
+
     void update(KPIAssignment kpiAssignment);
+
     void delete(KPIAssignmentId id);
 }

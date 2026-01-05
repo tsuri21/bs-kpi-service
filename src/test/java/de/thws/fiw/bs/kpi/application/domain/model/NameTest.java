@@ -9,20 +9,20 @@ import static org.junit.jupiter.api.Assertions.*;
 class NameTest {
 
     @Test
-    void init_nullValue_throwsNpe() {
+    void init_nullValue_throwsException() {
         NullPointerException ex = assertThrows(NullPointerException.class, () -> new Name(null));
         assertEquals("Name must not be null", ex.getMessage());
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"", "   "})
-    void init_blankValue_throwsIae(String blankValue) {
+    void init_blankValue_throwsException(String blankValue) {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> new Name(blankValue));
         assertEquals("Name must not be blank", ex.getMessage());
     }
 
     @Test
-    void init_validValue_returnsName() {
+    void init_validName_success() {
         assertEquals("Project", new Name("Project").value());
     }
 }

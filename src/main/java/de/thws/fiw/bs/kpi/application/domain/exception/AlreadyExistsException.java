@@ -1,6 +1,9 @@
 package de.thws.fiw.bs.kpi.application.domain.exception;
 
 public class AlreadyExistsException extends RuntimeException {
+    public AlreadyExistsException() {
+    }
+
     public AlreadyExistsException(String message) {
         super(message);
     }
@@ -11,8 +14,5 @@ public class AlreadyExistsException extends RuntimeException {
 
     public AlreadyExistsException(Throwable cause) {
         super(cause);
-    }
-
-    public AlreadyExistsException() {
     }
 }

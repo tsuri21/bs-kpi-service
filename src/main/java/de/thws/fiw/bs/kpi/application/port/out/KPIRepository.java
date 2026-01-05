@@ -8,8 +8,12 @@ import java.util.Optional;
 
 public interface KPIRepository {
     Optional<KPI> findById(KPIId id);
+
     Page<KPI> findByFilter(Name name, PageRequest pageRequest);
+
     void save(KPI kpi);
+
     void update(KPI kpi);
+
     void delete(KPIId id);
 }
