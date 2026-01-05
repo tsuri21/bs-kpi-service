@@ -1,7 +1,6 @@
 package de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.adapter;
 
 import de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.entity.KPIAssignmentEntity;
-import de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.entity.ProjectEntity;
 import de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.mapper.KPIAssignmentMapper;
 import de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.util.ExceptionUtils;
 import de.thws.fiw.bs.kpi.application.domain.exception.AlreadyExistsException;
@@ -10,6 +9,7 @@ import de.thws.fiw.bs.kpi.application.domain.model.*;
 import de.thws.fiw.bs.kpi.application.port.Page;
 import de.thws.fiw.bs.kpi.application.port.PageRequest;
 import de.thws.fiw.bs.kpi.application.port.out.KPIAssignmentRepository;
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceException;
@@ -22,8 +22,8 @@ import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
+@ApplicationScoped
 public class KPIAssignmentRepositoryAdapter implements KPIAssignmentRepository {
 
     @Inject
@@ -33,37 +33,35 @@ public class KPIAssignmentRepositoryAdapter implements KPIAssignmentRepository {
     EntityManager em;
 
     @Override
-    public Optional<KPIAssignment> findById(KPIAssignmentId id){
-        try{
+    public Optional<KPIAssignment> findById(KPIAssignmentId id) {
+        try {
             KPIAssignmentEntity kpiAssignment = em.find(KPIAssignmentEntity.class, id.value());
             return Optional.ofNullable(mapper.toDomainModel(kpiAssignment));
-        }
-        catch(PersistenceException pe){
+        } catch (PersistenceException pe) {
             throw new InfrastructureException("Database access failed for ID: " + id.value(), pe);
         }
     }
 
     @Override
-    public Page<KPIAssignment> findByFilter(KPIId kpiId, ProjectId projectId, PageRequest pageRequest){
-        try{
+    public Page<KPIAssignment> findByFilter(KPIId kpiId, ProjectId projectId, PageRequest pageRequest) {
+        try {
             CriteriaBuilder cb = em.getCriteriaBuilder();
             long total = countSearchResults(cb, kpiId, projectId);
 
-            if(total == 0){
+            if (total == 0) {
                 return new Page<>(List.of(), pageRequest, 0);
             }
 
             List<KPIAssignmentEntity> entities = fetchPageResults(cb, kpiId, projectId, pageRequest);
             return new Page<>(mapper.toDomainModels(entities), pageRequest, total);
-        }
-        catch (PersistenceException pe){
+        } catch (PersistenceException pe) {
             throw new InfrastructureException("Failed to execute kpiAssignment filter query", pe);
         }
     }
 
     @Override
     @Transactional
-    public void save (KPIAssignment kpiAssignment) {
+    public void save(KPIAssignment kpiAssignment) {
         if (kpiAssignment == null) {
             throw new InfrastructureException("KPIAssignment must not be null");
         }
@@ -137,15 +135,13 @@ public class KPIAssignmentRepositoryAdapter implements KPIAssignmentRepository {
         List<Predicate> predicates = new ArrayList<>();
 
         if (kpiId != null) {
-            predicates.add(cb.equal(root.get("kpiId"), kpiId));
+            predicates.add(cb.equal(root.get("kpiEntity").get("id"), kpiId.value()));
         }
 
         if (projectId != null) {
-            predicates.add(cb.equal(root.get("projectId"), projectId));
+            predicates.add(cb.equal(root.get("projectId"), projectId.value()));
         }
 
         return predicates.toArray(Predicate[]::new);
     }
-
-
 }
