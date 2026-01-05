@@ -7,6 +7,7 @@ import java.net.URI;
 import java.util.UUID;
 
 public class ProjectDTO extends AbstractDTO {
+
     @NotBlank(message="Name must not be blank")
     private String name;
 

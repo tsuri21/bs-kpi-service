@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 
 public class KPIDTO extends AbstractDTO {
+
     @NotBlank(message = "Name must not be blank")
     private String name;
 
