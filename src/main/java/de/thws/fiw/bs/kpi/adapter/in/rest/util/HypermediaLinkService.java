@@ -127,8 +127,6 @@ public class HypermediaLinkService {
     }
 
     public void setSelfLink(AbstractDTO dto) {
-        if (dto == null || dto.getId() == null) return;
-
         String href = uriInfo.getBaseUriBuilder()
                 .path(resourceInfo.getResourceClass())
                 .path(dto.getId().toString())
@@ -142,7 +140,7 @@ public class HypermediaLinkService {
         dtos.forEach(this::setSelfLink);
     }
 
-    private Link createCustomLink(Class<?> targetRes, String rel, String method) {
+    Link createCustomLink(Class<?> targetRes, String rel, String method) {
         return Link.fromUriBuilder(uriInfo.getBaseUriBuilder().path(targetRes))
                 .rel(rel)
                 .param("method", method)
@@ -150,7 +148,7 @@ public class HypermediaLinkService {
                 .build();
     }
 
-    private Link createCustomLink(Class<?> targetRes, String rel, String method, UUID id) {
+    Link createCustomLink(Class<?> targetRes, String rel, String method, UUID id) {
         return Link.fromUriBuilder(uriInfo.getBaseUriBuilder().path(targetRes).path(id.toString()))
                 .rel(rel)
                 .param("method", method)
@@ -158,7 +156,7 @@ public class HypermediaLinkService {
                 .build();
     }
 
-    private String getMediaType() {
+    String getMediaType() {
         return headers.getAcceptableMediaTypes().stream()
                 .map(MediaType::toString)
                 .filter(t -> !t.contains("*/*"))
@@ -166,7 +164,7 @@ public class HypermediaLinkService {
                 .orElse(MediaType.APPLICATION_JSON);
     }
 
-    private String getRelEntityName(Class<?> pathClass) {
+    String getRelEntityName(Class<?> pathClass) {
         return pathClass.getSimpleName().replace("Resource", "");
     }
 }
