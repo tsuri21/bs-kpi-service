@@ -11,9 +11,9 @@ public interface KPIAssignmentUseCase {
 
     Page<KPIAssignment> readAll(KPIId kpiId, ProjectId projectId, PageRequest pageRequest);
 
-    void create(KPIAssignment kpiAssignment);
+    void create(KPIAssignmentCommand kpiAssignmentCmd);
 
-    void update(KPIAssignment kpiAssignment);
+    void update(KPIAssignmentCommand kpiAssignmentCmd);
 
     void delete(KPIAssignmentId id);
 }
