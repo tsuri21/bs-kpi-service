@@ -1,7 +1,7 @@
 package de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.adapter;
 
 import de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.entity.KPIAssignmentEntity;
-import de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.mapper.KPIAssignmentMapper;
+import de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.mapper.KPIAssignmentJpaMapper;
 import de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.util.ExceptionUtils;
 import de.thws.fiw.bs.kpi.application.domain.exception.AlreadyExistsException;
 import de.thws.fiw.bs.kpi.application.domain.exception.InfrastructureException;
@@ -27,7 +27,7 @@ import java.util.Optional;
 public class KPIAssignmentRepositoryAdapter implements KPIAssignmentRepository {
 
     @Inject
-    KPIAssignmentMapper mapper;
+    KPIAssignmentJpaMapper mapper;
 
     @Inject
     EntityManager em;
@@ -36,7 +36,7 @@ public class KPIAssignmentRepositoryAdapter implements KPIAssignmentRepository {
     public Optional<KPIAssignment> findById(KPIAssignmentId id) {
         try {
             KPIAssignmentEntity kpiAssignment = em.find(KPIAssignmentEntity.class, id.value());
-            return Optional.ofNullable(mapper.toDomainModel(kpiAssignment));
+            return Optional.ofNullable(kpiAssignment).map(mapper::toDomainModel);
         } catch (PersistenceException pe) {
             throw new InfrastructureException("Database access failed for ID: " + id.value(), pe);
         }

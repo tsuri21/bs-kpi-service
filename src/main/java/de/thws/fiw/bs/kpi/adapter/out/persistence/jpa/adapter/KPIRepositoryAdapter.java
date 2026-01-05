@@ -1,7 +1,7 @@
 package de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.adapter;
 
 import de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.entity.KPIEntity;
-import de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.mapper.KPIMapper;
+import de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.mapper.KPIJpaMapper;
 import de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.util.ExceptionUtils;
 import de.thws.fiw.bs.kpi.application.domain.exception.AlreadyExistsException;
 import de.thws.fiw.bs.kpi.application.domain.exception.InfrastructureException;
@@ -29,7 +29,7 @@ import java.util.Optional;
 public class KPIRepositoryAdapter implements KPIRepository {
 
     @Inject
-    KPIMapper mapper;
+    KPIJpaMapper mapper;
 
     @Inject
     EntityManager em;
@@ -38,7 +38,7 @@ public class KPIRepositoryAdapter implements KPIRepository {
     public Optional<KPI> findById(KPIId id) {
         try {
             KPIEntity kpi = em.find(KPIEntity.class, id.value());
-            return Optional.ofNullable(mapper.toDomainModel(kpi));
+            return Optional.ofNullable(kpi).map(mapper::toDomainModel);
         } catch (PersistenceException ex) {
             throw new InfrastructureException("Database access failed for ID: " + id.value(), ex);
         }

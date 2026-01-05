@@ -10,13 +10,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Singleton
-public class KPIAssignmentMapper {
+public class KPIAssignmentJpaMapper implements PersistenceMapper<KPIAssignment, KPIAssignmentEntity> {
 
     @Inject
-    KPIMapper mapper;
+    KPIJpaMapper mapper;
 
+    @Override
     public KPIAssignmentEntity toPersistenceModel(KPIAssignment kpiAssignment) {
-        if (kpiAssignment == null) return null;
         return new KPIAssignmentEntity(
                 kpiAssignment.getId().value(),
                 kpiAssignment.getThresholds().getGreen(),
@@ -27,12 +27,8 @@ public class KPIAssignmentMapper {
         );
     }
 
-    public List<KPIAssignment> toDomainModels(List<KPIAssignmentEntity> kpiAssignmentsentities) {
-        return kpiAssignmentsentities.stream().map(this::toDomainModel).collect(Collectors.toList());
-    }
-
+    @Override
     public KPIAssignment toDomainModel(KPIAssignmentEntity kpiAssignmentEntity) {
-        if (kpiAssignmentEntity == null) return null;
         return new KPIAssignment(
                 new KPIAssignmentId(kpiAssignmentEntity.getId()),
                 Thresholds.forDestination(kpiAssignmentEntity.getKpiEntity().getDestination(), kpiAssignmentEntity.getGreen(), kpiAssignmentEntity.getYellow(), kpiAssignmentEntity.getRed()),
