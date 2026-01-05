@@ -8,11 +8,11 @@ import de.thws.fiw.bs.kpi.application.port.PageRequest;
 import io.quarkus.test.TestTransaction;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -23,15 +23,18 @@ class KPIAssignmentRepositoryAdapterTest {
     @Inject
     KPIAssignmentRepositoryAdapter adapter;
 
+    @Inject
+    KPIRepositoryAdapter kpiAdapter;
+
     private final PageRequest defaultPage = new PageRequest(1, 10);
 
     private final KPIAssignmentId defaultKAId1 = KPIAssignmentId.newId();
     private final KPIAssignmentId defaultKAId2 = KPIAssignmentId.newId();
     private final KPIAssignmentId defaultKAId3 = KPIAssignmentId.newId();
 
-    private final KPIId defaultKId1 = KPIId.newId();
-    private final KPIId defaultKId2 = KPIId.newId();
-    private final KPIId defaultKId3 = KPIId.newId();
+    private final KPI defaultK1 = new KPI(KPIId.newId(), new Name("Eins"), TargetDestination.DECREASING);
+    private final KPI defaultK2 = new KPI(KPIId.newId(), new Name("Zwei"), TargetDestination.DECREASING);
+    private final KPI defaultK3 = new KPI(KPIId.newId(), new Name("Drei"), TargetDestination.DECREASING);
 
     private final ProjectId defaultPId1 = ProjectId.newId();
     private final ProjectId defaultPId2 = ProjectId.newId();
@@ -42,15 +45,19 @@ class KPIAssignmentRepositoryAdapterTest {
     }
 
     private void createDefaultAssignments() {
-        adapter.save(new KPIAssignment(defaultKAId1, createThresholds(), defaultKId1, defaultPId1));
-        adapter.save(new KPIAssignment(defaultKAId2, createThresholds(), defaultKId2, defaultPId2));
-        adapter.save(new KPIAssignment(defaultKAId3, createThresholds(), defaultKId3, defaultPId3));
+        kpiAdapter.save(defaultK1);
+        kpiAdapter.save(defaultK2);
+        kpiAdapter.save(defaultK3);
+        adapter.save(new KPIAssignment(defaultKAId1, createThresholds(), defaultK1, defaultPId1));
+        adapter.save(new KPIAssignment(defaultKAId2, createThresholds(), defaultK2, defaultPId2));
+        adapter.save(new KPIAssignment(defaultKAId3, createThresholds(), defaultK3, defaultPId3));
     }
 
     @Test
     void findById_idExists_returnsAssignment() {
-        KPIAssignmentId id =KPIAssignmentId.newId();
-        KPIAssignment assignment = new KPIAssignment(id, createThresholds(),KPIId.newId(), ProjectId.newId());
+        kpiAdapter.save(defaultK1);
+        KPIAssignmentId id = KPIAssignmentId.newId();
+        KPIAssignment assignment = new KPIAssignment(id, createThresholds(), defaultK1, ProjectId.newId());
 
         adapter.save(assignment);
 
@@ -60,7 +67,7 @@ class KPIAssignmentRepositoryAdapterTest {
         KPIAssignment loaded = result.get();
         assertEquals(assignment.getId(), loaded.getId());
         assertEquals(assignment.getProjectId(), loaded.getProjectId());
-        assertEquals(assignment.getKpiId(), loaded.getKpiId());
+        assertEquals(assignment.getKpi().getId(), loaded.getKpi().getId());
         assertEquals(10.0, result.get().getThresholds().getGreen());
     }
 
@@ -85,15 +92,15 @@ class KPIAssignmentRepositoryAdapterTest {
                 .map(k -> k.getThresholds().getGreen())
                 .toList();
 
-        assertEquals(List.of(10.0, 10.0, 10.0),  values);
+        assertEquals(List.of(10.0, 10.0, 10.0), values);
     }
 
     @Test
     void findByFilter_onlyKpiId_returnsFiltered() {
-        KPIId targetKpi = defaultKId1;
         createDefaultAssignments();
+        KPI targetKpi = defaultK1;
 
-        Page<KPIAssignment> result = adapter.findByFilter(targetKpi, null, defaultPage);
+        Page<KPIAssignment> result = adapter.findByFilter(targetKpi.getId(), null, defaultPage);
 
         assertEquals(1, result.content().size());
         assertEquals(1, result.totalElements());
@@ -102,8 +109,8 @@ class KPIAssignmentRepositoryAdapterTest {
 
     @Test
     void findByFilter_onlyProjectId_returnsFiltered() {
-        ProjectId targetProject = defaultPId1;
         createDefaultAssignments();
+        ProjectId targetProject = defaultPId1;
 
         Page<KPIAssignment> result = adapter.findByFilter(null, targetProject, defaultPage);
 
@@ -114,22 +121,22 @@ class KPIAssignmentRepositoryAdapterTest {
 
     @Test
     void findByFilter_bothCriteria_returnsIntersection() {
-        KPIId targetKpi = defaultKId1;
+        createDefaultAssignments();
+        KPI targetKpi = defaultK1;
         ProjectId targetProject1 = defaultPId1;
         ProjectId targetProject2 = defaultPId2;
-        createDefaultAssignments();
 
-        Page<KPIAssignment> result = adapter.findByFilter(targetKpi, targetProject1, defaultPage);
+        Page<KPIAssignment> result = adapter.findByFilter(targetKpi.getId(), targetProject1, defaultPage);
         assertEquals(1, result.content().size());
         assertEquals(1, result.totalElements());
         assertEquals(defaultKAId1, result.content().getFirst().getId());
 
-        Page<KPIAssignment> resultEmpty = adapter.findByFilter(targetKpi, targetProject2, defaultPage);
+        Page<KPIAssignment> resultEmpty = adapter.findByFilter(targetKpi.getId(), targetProject2, defaultPage);
         assertTrue(resultEmpty.content().isEmpty());
     }
 
     @Test
-    void findByFilter_noMatch_returnsEmptyPage(){
+    void findByFilter_noMatch_returnsEmptyPage() {
         createDefaultAssignments();
 
         KPIId unknownKPI = KPIId.newId();
@@ -153,7 +160,7 @@ class KPIAssignmentRepositoryAdapterTest {
     }
 
     @Test
-    void findByFilter_pageOutOfBounds_returnsEmptyPage(){
+    void findByFilter_pageOutOfBounds_returnsEmptyPage() {
         createDefaultAssignments();
 
         PageRequest outOfBoundsRequest = new PageRequest(10, 10);
@@ -166,9 +173,10 @@ class KPIAssignmentRepositoryAdapterTest {
     @Test
     void save_validAssignment_persists() {
         KPIAssignmentId id = KPIAssignmentId.newId();
-        KPIId kpiId = KPIId.newId();
+        kpiAdapter.save(defaultK1);
+        KPI kpi = defaultK1;
         ProjectId projectId = ProjectId.newId();
-        KPIAssignment assignment = new KPIAssignment(id, createThresholds(), kpiId, projectId);
+        KPIAssignment assignment = new KPIAssignment(id, createThresholds(), kpi, projectId);
 
         adapter.save(assignment);
 
@@ -177,7 +185,7 @@ class KPIAssignmentRepositoryAdapterTest {
 
         KPIAssignment loaded = result.get();
         assertEquals(id, loaded.getId());
-        assertEquals(kpiId, loaded.getKpiId());
+        assertEquals(kpi.getId(), loaded.getKpi().getId());
         assertEquals(projectId, loaded.getProjectId());
 
         Page<KPIAssignment> allAssignments = adapter.findByFilter(null, null, defaultPage);
@@ -191,47 +199,52 @@ class KPIAssignmentRepositoryAdapterTest {
 
     @Test
     void save_duplicateKPIIdAndProjectId_throwsException() {
-        KPIId kpid = KPIId.newId();
+        kpiAdapter.save(defaultK1);
+        KPI kpi = defaultK1;
         ProjectId projectId = ProjectId.newId();
-        adapter.save(new KPIAssignment(KPIAssignmentId.newId(), createThresholds(), kpid, projectId));
+        adapter.save(new KPIAssignment(KPIAssignmentId.newId(), createThresholds(), kpi, projectId));
 
-        KPIAssignment duplicate = new KPIAssignment(KPIAssignmentId.newId(), createThresholds(), kpid, projectId);
+        KPIAssignment duplicate = new KPIAssignment(KPIAssignmentId.newId(), createThresholds(), kpi, projectId);
 
         assertThrows(AlreadyExistsException.class, () -> adapter.save(duplicate));
     }
+
     @Test
     void update_validChanges_updatesKPIAssignment() {
         KPIAssignmentId id = KPIAssignmentId.newId();
-        KPIId kpi = KPIId.newId();
+        kpiAdapter.save(defaultK1);
+        KPI kpi = defaultK1;
         ProjectId project = ProjectId.newId();
 
         adapter.save(new KPIAssignment(id, createThresholds(), kpi, project));
 
-        Thresholds newThresholds = Thresholds.forDestination(TargetDestination.INCREASING, 99, 89, 79);
+        Thresholds newThresholds = Thresholds.forDestination(TargetDestination.DECREASING, 79, 89, 99);
         adapter.update(new KPIAssignment(id, newThresholds, kpi, project));
 
         Optional<KPIAssignment> result = adapter.findById(id);
         assertTrue(result.isPresent());
-        assertEquals(99.0, result.get().getThresholds().getGreen());
+        assertEquals(79.0, result.get().getThresholds().getGreen());
         assertEquals(89.0, result.get().getThresholds().getYellow());
-        assertEquals(79.0, result.get().getThresholds().getRed());
+        assertEquals(99.0, result.get().getThresholds().getRed());
     }
 
     @Test
     void update_nonExistent_throwsException() {
-        KPIAssignment ghost = new KPIAssignment(KPIAssignmentId.newId(), createThresholds(), KPIId.newId(), ProjectId.newId());
+        kpiAdapter.save(defaultK1);
+        KPIAssignment ghost = new KPIAssignment(KPIAssignmentId.newId(), createThresholds(), defaultK1, ProjectId.newId());
         assertThrows(InfrastructureException.class, () -> adapter.update(ghost));
     }
 
     @Test
-    void update_nullAsKPIAssignment(){
+    void update_nullAsKPIAssignment() {
         assertThrows(InfrastructureException.class, () -> adapter.update(null));
     }
 
     @Test
     void delete_idExists_removesAssignment() {
+        kpiAdapter.save(defaultK1);
         KPIAssignmentId id = KPIAssignmentId.newId();
-        adapter.save(new KPIAssignment(id, createThresholds(), KPIId.newId(), ProjectId.newId()));
+        adapter.save(new KPIAssignment(id, createThresholds(), defaultK1, ProjectId.newId()));
 
         adapter.delete(id);
 
@@ -240,15 +253,12 @@ class KPIAssignmentRepositoryAdapterTest {
 
     @Test
     void delete_idMissing_doesNothing() {
+        kpiAdapter.save(defaultK1);
         KPIAssignmentId existingId = KPIAssignmentId.newId();
-        adapter.save(new KPIAssignment(existingId, createThresholds(), KPIId.newId(), ProjectId.newId()));
+        adapter.save(new KPIAssignment(existingId, createThresholds(), defaultK1, ProjectId.newId()));
 
         adapter.delete(KPIAssignmentId.newId());
 
         assertTrue(adapter.findById(existingId).isPresent());
     }
-
-
-
-
 }
