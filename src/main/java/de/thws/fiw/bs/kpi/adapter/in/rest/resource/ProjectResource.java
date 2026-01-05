@@ -16,6 +16,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.*;
+import org.jboss.resteasy.annotations.cache.Cache;
+import org.jboss.resteasy.annotations.cache.NoCache;
 
 import java.util.List;
 import java.util.UUID;
@@ -34,6 +36,7 @@ public class ProjectResource {
 
     @GET
     @Path("{id}")
+    @Cache(maxAge = 60, isPrivate = true)
     @Produces(MediaType.APPLICATION_JSON)
     public Response getById (@NotNull @PathParam("id") UUID id) {
         ProjectId projectId = new ProjectId(id);
@@ -52,6 +55,7 @@ public class ProjectResource {
     }
 
     @GET
+    @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAll(
             @QueryParam("name") Name name,
