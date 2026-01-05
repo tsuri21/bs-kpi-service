@@ -21,6 +21,9 @@ public class KPIAssignmentService implements KPIAssignmentUseCase {
     @Inject
     KPIService kpiService;
 
+    @Inject
+    ProjectService projectService;
+
     @Override
     public Optional<KPIAssignment> readById(KPIAssignmentId id) {
         return kpiAssignmentRepository.findById(id);
@@ -57,8 +60,10 @@ public class KPIAssignmentService implements KPIAssignmentUseCase {
 
     private KPIAssignment createKPIAssignment(KPIAssignmentCommand kpiAssignmentCmd) {
         KPIId kpiId = kpiAssignmentCmd.kpiId();
-        KPI kpi = kpiService.readById(kpiId)
-                .orElseThrow(() -> new ResourceNotFoundException("KPI", kpiId));
+        ProjectId projectId = kpiAssignmentCmd.projectId();
+
+        KPI kpi = kpiService.readById(kpiId).orElseThrow(() -> new ResourceNotFoundException("KPI", kpiId));
+        projectService.readById(projectId).orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
 
         Thresholds thresholds = Thresholds.forDestination(
                 kpi.getDestination(),
@@ -71,7 +76,7 @@ public class KPIAssignmentService implements KPIAssignmentUseCase {
                 kpiAssignmentCmd.id(),
                 thresholds,
                 kpi,
-                kpiAssignmentCmd.projectId()
+                projectId
         );
     }
 }
