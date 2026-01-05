@@ -9,6 +9,8 @@ import jakarta.inject.Singleton;
 
 @Singleton
 public class ProjectApiMapper implements ApiMapper<Project, ProjectDTO> {
+
+    @Override
     public ProjectDTO toApiModel(Project project) {
         return new ProjectDTO(
                 project.getId().value(),
@@ -17,6 +19,7 @@ public class ProjectApiMapper implements ApiMapper<Project, ProjectDTO> {
         );
     }
 
+    @Override
     public Project toDomainModel(ProjectDTO projectDto) {
         return new Project(
                 projectDto.getId() == null ? ProjectId.newId() : new ProjectId(projectDto.getId()),
