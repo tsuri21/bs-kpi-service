@@ -28,10 +28,10 @@ class KPIRepositoryAdapterTest {
 
     private final PageRequest pageRequest = new PageRequest(1, 10);
 
-    private void createDefaultKPIs(){
-        adapter.save(new  KPI(KPIId.newId(), new Name("Eins"), TargetDestination.DECREASING));
-        adapter.save(new  KPI(KPIId.newId(), new Name("Zwei"), TargetDestination.INCREASING));
-        adapter.save(new  KPI(KPIId.newId(), new Name("Drei"), TargetDestination.DECREASING));
+    private void createDefaultKPIs() {
+        adapter.save(new KPI(KPIId.newId(), new Name("Eins"), TargetDestination.DECREASING));
+        adapter.save(new KPI(KPIId.newId(), new Name("Zwei"), TargetDestination.INCREASING));
+        adapter.save(new KPI(KPIId.newId(), new Name("Drei"), TargetDestination.DECREASING));
     }
 
     @Test
@@ -51,7 +51,7 @@ class KPIRepositoryAdapterTest {
     }
 
     @Test
-    void finById_idMissing_returnsEmpty(){
+    void finById_idMissing_returnsEmpty() {
         KPIId nonExistentId = KPIId.newId();
         Optional<KPI> result = adapter.findById(nonExistentId);
 
@@ -59,10 +59,10 @@ class KPIRepositoryAdapterTest {
     }
 
     @Test
-    void findByFilter_filterIsNull_returnsAll(){
+    void findByFilter_filterIsNull_returnsAll() {
         createDefaultKPIs();
 
-        Page<KPI> result = adapter.findByFilter(null,  pageRequest);
+        Page<KPI> result = adapter.findByFilter(null, pageRequest);
 
         assertEquals(3, result.content().size());
         assertEquals(3, result.totalElements());
@@ -75,17 +75,17 @@ class KPIRepositoryAdapterTest {
     }
 
     @Test
-    void findByFilter_NameIsProvided_returnsFiltered(){
+    void findByFilter_NameIsProvided_returnsFiltered() {
         createDefaultKPIs();
 
         Page<KPI> result = adapter.findByFilter(new Name("Eins"), pageRequest);
-        assertEquals(1,  result.content().size());
-        assertEquals(1,  result.totalElements());
+        assertEquals(1, result.content().size());
+        assertEquals(1, result.totalElements());
         assertEquals("Eins", result.content().getFirst().getName().value());
     }
 
     @Test
-    void findByFilter_noMatch_returnsEmptyPage(){
+    void findByFilter_noMatch_returnsEmptyPage() {
         createDefaultKPIs();
 
         Name unknownName = new Name("Unknown");
