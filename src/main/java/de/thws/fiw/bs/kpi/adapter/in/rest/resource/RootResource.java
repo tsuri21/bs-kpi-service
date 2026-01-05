@@ -4,10 +4,8 @@ import de.thws.fiw.bs.kpi.adapter.in.rest.util.HypermediaLinkService;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.Link;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriInfo;
+import jakarta.ws.rs.core.*;
+import org.jboss.resteasy.annotations.cache.Cache;
 
 @Path("/")
 public class RootResource {
@@ -16,12 +14,14 @@ public class RootResource {
     HypermediaLinkService linkService;
 
     @GET
+    @Cache(noStore = true)
     public Response showLinks() {
 
         Link getAllProjects = linkService.createGetAllLink(ProjectResource.class);
+        Link getAllKPIs = linkService.createGetAllLink(KPIResource.class);
 
         return Response.ok()
-                .links(getAllProjects)
+                .links(getAllProjects, getAllKPIs)
                 .build();
     }
 }
