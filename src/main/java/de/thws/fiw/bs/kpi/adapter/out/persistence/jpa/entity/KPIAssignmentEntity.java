@@ -1,12 +1,11 @@
 package de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.entity;
 
-import de.thws.fiw.bs.kpi.application.domain.model.Thresholds;
 import jakarta.persistence.*;
 
 import java.util.UUID;
 
 @Entity
-@Table(uniqueConstraints={
+@Table(uniqueConstraints = {
         @UniqueConstraint(columnNames = {"kpi_id", "project_id"})
 })
 public class KPIAssignmentEntity {
@@ -23,27 +22,23 @@ public class KPIAssignmentEntity {
     @Column(nullable = false)
     private double red;
 
-    @Column(name = "kpi_id", insertable = false, updatable = false)
-    private UUID kpiId;
-
     @ManyToOne
-    @JoinColumn(name = "kpi_id")
+    @JoinColumn(name = "kpi_id", nullable = false)
     private KPIEntity kpiEntity;
 
     @Column(name = "project_id", nullable = false)
     private UUID projectId;
 
 
-
     public KPIAssignmentEntity() {
     }
 
-    public KPIAssignmentEntity(UUID id, double green, double yellow, double red, UUID kpiId, UUID projectId) {
+    public KPIAssignmentEntity(UUID id, double green, double yellow, double red, KPIEntity kpi, UUID projectId) {
         this.id = id;
         this.green = green;
         this.yellow = yellow;
         this.red = red;
-        this.kpiId = kpiId;
+        this.kpiEntity = kpi;
         this.projectId = projectId;
     }
 
@@ -98,11 +93,4 @@ public class KPIAssignmentEntity {
         this.kpiEntity = kpiEntity;
     }
 
-    public UUID getKpiId() {
-        return kpiId;
-    }
-
-    public void setKpiId(UUID kpiId) {
-        this.kpiId = kpiId;
-    }
 }
