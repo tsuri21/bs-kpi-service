@@ -98,7 +98,7 @@ public class KPIAssignmentRepositoryAdapter implements KPIAssignmentRepository {
     @Transactional
     public void delete(KPIAssignmentId id) {
         if (id == null) {
-            throw new InfrastructureException("KPIAssignment id must not be null");
+            throw new InfrastructureException("KPIAssignmentId must not be null");
         }
         try {
             KPIAssignmentEntity kpiAssignment = em.find(KPIAssignmentEntity.class, id.value());
