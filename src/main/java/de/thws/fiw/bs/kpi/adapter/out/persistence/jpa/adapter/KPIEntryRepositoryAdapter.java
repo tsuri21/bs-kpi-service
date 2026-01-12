@@ -103,24 +103,6 @@ public class KPIEntryRepositoryAdapter implements KPIEntryRepository {
 
     @Override
     @Transactional
-    public void update(KPIEntry kpiEntry){
-        if(kpiEntry == null){
-            throw new InfrastructureException("KPIEntry must not be null");
-        }
-        try{
-            KPIEntryEntity existingKpiEntry = em.find(KPIEntryEntity.class, kpiEntry.getId().value());
-            if(existingKpiEntry == null){
-                throw new InfrastructureException("Cannot update non existing kpiEntry with ID: " + kpiEntry.getId().value());
-            }
-            em.merge(mapper.toPersistenceModel(kpiEntry));
-            em.flush();
-        } catch (PersistenceException pe){
-            throw new InfrastructureException("Failed to update kpiEntry with ID: " + kpiEntry.getId().value(), pe);
-        }
-    }
-
-    @Override
-    @Transactional
     public void delete(KPIEntryId id){
         if(id == null){
             throw new InfrastructureException("KPIEntryId must not be null");

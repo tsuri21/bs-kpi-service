@@ -1,6 +1,8 @@
 package de.thws.fiw.bs.kpi.application.port.in;
 
-import de.thws.fiw.bs.kpi.application.domain.model.*;
+import de.thws.fiw.bs.kpi.application.domain.model.kpiAssignment.KPIAssignmentId;
+import de.thws.fiw.bs.kpi.application.domain.model.kpiEntry.KPIEntry;
+import de.thws.fiw.bs.kpi.application.domain.model.kpiEntry.KPIEntryId;
 import de.thws.fiw.bs.kpi.application.port.Page;
 import de.thws.fiw.bs.kpi.application.port.PageRequest;
 
@@ -13,8 +15,6 @@ public interface KPIEntryUseCase {
     Page<KPIEntry> readAll(KPIAssignmentId id, Instant from, Instant to, PageRequest pageRequest);
 
     void create(KPIEntry kpiEntry);
-
-    void update(KPIEntry kpiEntry);
 
     void delete(KPIEntryId id);
 }

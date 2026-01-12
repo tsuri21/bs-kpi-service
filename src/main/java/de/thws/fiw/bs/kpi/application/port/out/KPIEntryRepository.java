@@ -18,7 +18,5 @@ public interface KPIEntryRepository {
 
     void save(KPIEntry kpiEntry);
 
-    void update(KPIEntry kpiEntry);
-
     void delete(KPIEntryId id);
 }
