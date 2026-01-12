@@ -1,10 +1,18 @@
 package de.thws.fiw.bs.kpi.application.domain.service;
 
 import de.thws.fiw.bs.kpi.application.domain.exception.ResourceNotFoundException;
-import de.thws.fiw.bs.kpi.application.domain.model.*;
+import de.thws.fiw.bs.kpi.application.domain.model.kpi.KPI;
+import de.thws.fiw.bs.kpi.application.domain.model.kpi.KPIId;
+import de.thws.fiw.bs.kpi.application.domain.model.kpi.TargetDestination;
+import de.thws.fiw.bs.kpi.application.domain.model.kpiAssignment.KPIAssignment;
+import de.thws.fiw.bs.kpi.application.domain.model.kpiAssignment.KPIAssignmentId;
+import de.thws.fiw.bs.kpi.application.domain.model.project.Project;
+import de.thws.fiw.bs.kpi.application.domain.model.project.ProjectId;
 import de.thws.fiw.bs.kpi.application.port.PageRequest;
 import de.thws.fiw.bs.kpi.application.port.in.KPIAssignmentCommand;
 import de.thws.fiw.bs.kpi.application.port.out.KPIAssignmentRepository;
+import de.thws.fiw.bs.kpi.application.port.out.KPIRepository;
+import de.thws.fiw.bs.kpi.application.port.out.ProjectRepository;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
@@ -26,10 +34,10 @@ class KPIAssignmentServiceTest {
     KPIAssignmentRepository kpiAssignmentRepository;
 
     @InjectMock
-    KPIService kpiService;
+    KPIRepository kpiRepository;
 
     @InjectMock
-    ProjectService projectService;
+    ProjectRepository projectRepository;
 
     @Test
     void readById_idGiven_callsRepository() {
@@ -61,10 +69,10 @@ class KPIAssignmentServiceTest {
 
         KPI kpi = mock(KPI.class);
         when(kpi.getDestination()).thenReturn(TargetDestination.INCREASING);
-        when(kpiService.readById(kpiId)).thenReturn(Optional.of(kpi));
+        when(kpiRepository.findById(kpiId)).thenReturn(Optional.of(kpi));
 
         Project project = mock(Project.class);
-        when(projectService.readById(projectId)).thenReturn(Optional.of(project));
+        when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
 
         ArgumentCaptor<KPIAssignment> captor = ArgumentCaptor.forClass(KPIAssignment.class);
 
@@ -91,11 +99,11 @@ class KPIAssignmentServiceTest {
 
         KPIAssignmentCommand cmd = createKpiAssignmentCmdMock(assignmentId, kpiId, projectId);
 
-        when(kpiService.readById(kpiId)).thenReturn(Optional.empty());
+        when(kpiRepository.findById(kpiId)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> kpiAssignmentService.create(cmd));
         verify(kpiAssignmentRepository, never()).save(any());
-        verify(projectService, never()).readById(any());
+        verify(projectRepository, never()).findById(any());
     }
 
     @Test
@@ -108,9 +116,9 @@ class KPIAssignmentServiceTest {
 
         KPI kpi = mock(KPI.class);
         when(kpi.getDestination()).thenReturn(TargetDestination.INCREASING);
-        when(kpiService.readById(kpiId)).thenReturn(Optional.of(kpi));
+        when(kpiRepository.findById(kpiId)).thenReturn(Optional.of(kpi));
 
-        when(projectService.readById(projectId)).thenReturn(Optional.empty());
+        when(projectRepository.findById(projectId)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> kpiAssignmentService.create(cmd));
         verify(kpiAssignmentRepository, never()).save(any());
@@ -126,10 +134,10 @@ class KPIAssignmentServiceTest {
 
         KPI kpi = mock(KPI.class);
         when(kpi.getDestination()).thenReturn(TargetDestination.INCREASING);
-        when(kpiService.readById(kpiId)).thenReturn(Optional.of(kpi));
+        when(kpiRepository.findById(kpiId)).thenReturn(Optional.of(kpi));
 
         Project project = mock(Project.class);
-        when(projectService.readById(projectId)).thenReturn(Optional.of(project));
+        when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
 
         KPIAssignment kpiAssignment = mock(KPIAssignment.class);
         when(kpiAssignmentRepository.findById(assignmentId)).thenReturn(Optional.of(kpiAssignment));
@@ -161,10 +169,10 @@ class KPIAssignmentServiceTest {
 
         KPI kpi = mock(KPI.class);
         when(kpi.getDestination()).thenReturn(TargetDestination.INCREASING);
-        when(kpiService.readById(kpiId)).thenReturn(Optional.of(kpi));
+        when(kpiRepository.findById(kpiId)).thenReturn(Optional.of(kpi));
 
         Project project = mock(Project.class);
-        when(projectService.readById(projectId)).thenReturn(Optional.of(project));
+        when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
 
         when(kpiAssignmentRepository.findById(assignmentId)).thenReturn(Optional.empty());
 
@@ -180,11 +188,11 @@ class KPIAssignmentServiceTest {
 
         KPIAssignmentCommand cmd = createKpiAssignmentCmdMock(assignmentId, kpiId, projectId);
 
-        when(kpiService.readById(kpiId)).thenReturn(Optional.empty());
+        when(kpiRepository.findById(kpiId)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> kpiAssignmentService.update(cmd));
         verify(kpiAssignmentRepository, never()).update(any());
-        verify(projectService, never()).readById(any());
+        verify(projectRepository, never()).findById(any());
         verify(kpiAssignmentRepository, never()).findById(any());
     }
 
@@ -198,9 +206,9 @@ class KPIAssignmentServiceTest {
 
         KPI kpi = mock(KPI.class);
         when(kpi.getDestination()).thenReturn(TargetDestination.INCREASING);
-        when(kpiService.readById(kpiId)).thenReturn(Optional.of(kpi));
+        when(kpiRepository.findById(kpiId)).thenReturn(Optional.of(kpi));
 
-        when(projectService.readById(projectId)).thenReturn(Optional.empty());
+        when(projectRepository.findById(projectId)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> kpiAssignmentService.update(cmd));
         verify(kpiAssignmentRepository, never()).update(any());
