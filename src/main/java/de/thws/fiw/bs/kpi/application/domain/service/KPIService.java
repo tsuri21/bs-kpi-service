@@ -1,8 +1,8 @@
 package de.thws.fiw.bs.kpi.application.domain.service;
 
 import de.thws.fiw.bs.kpi.application.domain.exception.ResourceNotFoundException;
-import de.thws.fiw.bs.kpi.application.domain.model.KPI;
-import de.thws.fiw.bs.kpi.application.domain.model.KPIId;
+import de.thws.fiw.bs.kpi.application.domain.model.kpi.KPI;
+import de.thws.fiw.bs.kpi.application.domain.model.kpi.KPIId;
 import de.thws.fiw.bs.kpi.application.domain.model.Name;
 import de.thws.fiw.bs.kpi.application.port.Page;
 import de.thws.fiw.bs.kpi.application.port.PageRequest;
@@ -35,10 +35,11 @@ public class KPIService implements KPIUseCase {
     }
 
     @Override
-    public void update(KPI kpi) {
-        kpiRepository.findById(kpi.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("KPI", kpi.getId()));
+    public void updateName(KPIId id, Name name) {
+        KPI kpi = kpiRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("KPI", id));
 
+        kpi.setName(name);
         kpiRepository.update(kpi);
     }
 
