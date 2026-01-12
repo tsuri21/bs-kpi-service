@@ -1,8 +1,12 @@
 package de.thws.fiw.bs.kpi.adapter.in.rest.mapper;
 
-import de.thws.fiw.bs.kpi.adapter.in.rest.model.KPIDTO;
-import de.thws.fiw.bs.kpi.adapter.in.rest.model.TargetDestinationDTO;
+import de.thws.fiw.bs.kpi.adapter.in.rest.model.kpi.CreateKPIDTO;
+import de.thws.fiw.bs.kpi.adapter.in.rest.model.kpi.KPIDTO;
+import de.thws.fiw.bs.kpi.adapter.in.rest.model.kpi.TargetDestinationDTO;
 import de.thws.fiw.bs.kpi.application.domain.model.*;
+import de.thws.fiw.bs.kpi.application.domain.model.kpi.KPI;
+import de.thws.fiw.bs.kpi.application.domain.model.kpi.KPIId;
+import de.thws.fiw.bs.kpi.application.domain.model.kpi.TargetDestination;
 import jakarta.inject.Singleton;
 
 @Singleton
@@ -20,9 +24,17 @@ public class KPIApiMapper implements ApiMapper<KPI, KPIDTO> {
     @Override
     public KPI toDomainModel(KPIDTO kpiDto) {
         return new KPI(
-                kpiDto.getId() == null ? KPIId.newId() : new KPIId(kpiDto.getId()),
+                new KPIId(kpiDto.getId()),
                 new Name(kpiDto.getName()),
                 TargetDestination.valueOf(kpiDto.getDestination().name())
+        );
+    }
+
+    public KPI toDomainModelByCreate(CreateKPIDTO createKPIDto) {
+        return new KPI(
+                KPIId.newId(),
+                new Name(createKPIDto.getName()),
+                TargetDestination.valueOf(createKPIDto.getDestination().name())
         );
     }
 }

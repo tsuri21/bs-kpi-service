@@ -1,5 +1,6 @@
-package de.thws.fiw.bs.kpi.adapter.in.rest.model;
+package de.thws.fiw.bs.kpi.adapter.in.rest.model.kpi;
 
+import de.thws.fiw.bs.kpi.adapter.in.rest.model.AbstractDTO;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 

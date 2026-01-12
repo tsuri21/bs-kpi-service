@@ -1,4 +1,4 @@
-package de.thws.fiw.bs.kpi.adapter.in.rest.model;
+package de.thws.fiw.bs.kpi.adapter.in.rest.model.kpi;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 

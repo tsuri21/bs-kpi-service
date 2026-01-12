@@ -1,10 +1,12 @@
 package de.thws.fiw.bs.kpi.adapter.in.rest.resource;
 
 import de.thws.fiw.bs.kpi.adapter.in.rest.mapper.KPIApiMapper;
-import de.thws.fiw.bs.kpi.adapter.in.rest.model.KPIDTO;
+import de.thws.fiw.bs.kpi.adapter.in.rest.model.kpi.CreateKPIDTO;
+import de.thws.fiw.bs.kpi.adapter.in.rest.model.kpi.KPIDTO;
+import de.thws.fiw.bs.kpi.adapter.in.rest.model.kpi.UpdateKPIDTO;
 import de.thws.fiw.bs.kpi.adapter.in.rest.util.HypermediaLinkService;
-import de.thws.fiw.bs.kpi.application.domain.model.KPI;
-import de.thws.fiw.bs.kpi.application.domain.model.KPIId;
+import de.thws.fiw.bs.kpi.application.domain.model.kpi.KPI;
+import de.thws.fiw.bs.kpi.application.domain.model.kpi.KPIId;
 import de.thws.fiw.bs.kpi.application.domain.model.Name;
 import de.thws.fiw.bs.kpi.application.port.Page;
 import de.thws.fiw.bs.kpi.application.port.PageRequest;
@@ -84,8 +86,8 @@ public class KPIResource {
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response create(@Valid KPIDTO kpiDto) {
-        KPI kpi = mapper.toDomainModel(kpiDto);
+    public Response create(@Valid CreateKPIDTO kpiDto) {
+        KPI kpi = mapper.toDomainModelByCreate(kpiDto);
         kpiUseCase.create(kpi);
 
         UUID newId = kpi.getId().value();
@@ -97,16 +99,15 @@ public class KPIResource {
                 .build();
     }
 
-    @PUT
+    @PATCH
     @Path("{id}")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response update(@NotNull @PathParam("id") UUID id, @Valid KPIDTO kpiDto) {
+    public Response update(@NotNull @PathParam("id") UUID id, @Valid UpdateKPIDTO kpiDto) {
         if (!id.equals(kpiDto.getId())) {
             throw new IllegalArgumentException("The ID in the path does not match the ID in the body.");
         }
 
-        KPI kpi = mapper.toDomainModel(kpiDto);
-        kpiUseCase.update(kpi);
+        kpiUseCase.updateName(new KPIId(id), new Name(kpiDto.getName()));
 
         return Response.noContent()
                 .links(linkService.createSelfLink(id))

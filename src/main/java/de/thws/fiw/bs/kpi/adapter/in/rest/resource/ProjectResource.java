@@ -1,12 +1,13 @@
 package de.thws.fiw.bs.kpi.adapter.in.rest.resource;
 
 import de.thws.fiw.bs.kpi.adapter.in.rest.mapper.ProjectApiMapper;
-import de.thws.fiw.bs.kpi.adapter.in.rest.model.ProjectDTO;
+import de.thws.fiw.bs.kpi.adapter.in.rest.model.project.CreateProjectDTO;
+import de.thws.fiw.bs.kpi.adapter.in.rest.model.project.ProjectDTO;
 import de.thws.fiw.bs.kpi.adapter.in.rest.util.HypermediaLinkService;
 import de.thws.fiw.bs.kpi.application.domain.model.Name;
-import de.thws.fiw.bs.kpi.application.domain.model.Project;
-import de.thws.fiw.bs.kpi.application.domain.model.ProjectId;
-import de.thws.fiw.bs.kpi.application.domain.model.RepoUrl;
+import de.thws.fiw.bs.kpi.application.domain.model.project.Project;
+import de.thws.fiw.bs.kpi.application.domain.model.project.ProjectId;
+import de.thws.fiw.bs.kpi.application.domain.model.project.RepoUrl;
 import de.thws.fiw.bs.kpi.application.port.Page;
 import de.thws.fiw.bs.kpi.application.port.PageRequest;
 import de.thws.fiw.bs.kpi.application.port.in.ProjectUseCase;
@@ -84,8 +85,8 @@ public class ProjectResource {
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response create(@Valid ProjectDTO projectDto) {
-        Project project = mapper.toDomainModel(projectDto);
+    public Response create(@Valid CreateProjectDTO projectDto) {
+        Project project = mapper.toDomainModelByCreate(projectDto);
         projectUseCase.create(project);
 
         UUID newId = project.getId().value();
