@@ -1,4 +1,6 @@
-package de.thws.fiw.bs.kpi.application.domain.model;
+package de.thws.fiw.bs.kpi.application.domain.model.kpiEntry;
+
+import de.thws.fiw.bs.kpi.application.domain.model.kpiAssignment.KPIAssignmentId;
 
 import java.time.Clock;
 import java.time.Instant;

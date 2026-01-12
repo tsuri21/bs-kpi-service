@@ -2,6 +2,8 @@ package de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.mapper;
 
 import de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.entity.KPIEntity;
 import de.thws.fiw.bs.kpi.application.domain.model.*;
+import de.thws.fiw.bs.kpi.application.domain.model.kpi.KPI;
+import de.thws.fiw.bs.kpi.application.domain.model.kpi.KPIId;
 import jakarta.inject.Singleton;
 
 @Singleton

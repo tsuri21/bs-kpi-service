@@ -1,4 +1,8 @@
-package de.thws.fiw.bs.kpi.application.domain.model;
+package de.thws.fiw.bs.kpi.application.domain.model.kpiAssignment;
+
+import de.thws.fiw.bs.kpi.application.domain.model.Thresholds;
+import de.thws.fiw.bs.kpi.application.domain.model.kpi.KPI;
+import de.thws.fiw.bs.kpi.application.domain.model.project.ProjectId;
 
 import java.util.Objects;
 

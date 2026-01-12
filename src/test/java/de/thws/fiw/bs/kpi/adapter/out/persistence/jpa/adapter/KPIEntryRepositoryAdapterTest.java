@@ -2,7 +2,9 @@ package de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.adapter;
 
 import de.thws.fiw.bs.kpi.application.domain.exception.AlreadyExistsException;
 import de.thws.fiw.bs.kpi.application.domain.exception.InfrastructureException;
-import de.thws.fiw.bs.kpi.application.domain.model.*;
+import de.thws.fiw.bs.kpi.application.domain.model.kpiAssignment.KPIAssignmentId;
+import de.thws.fiw.bs.kpi.application.domain.model.kpiEntry.KPIEntry;
+import de.thws.fiw.bs.kpi.application.domain.model.kpiEntry.KPIEntryId;
 import de.thws.fiw.bs.kpi.application.port.Page;
 import de.thws.fiw.bs.kpi.application.port.PageRequest;
 import io.quarkus.test.TestTransaction;

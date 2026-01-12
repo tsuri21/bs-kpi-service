@@ -5,7 +5,10 @@ import de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.mapper.KPIAssignmentJpaMap
 import de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.util.ExceptionUtils;
 import de.thws.fiw.bs.kpi.application.domain.exception.AlreadyExistsException;
 import de.thws.fiw.bs.kpi.application.domain.exception.InfrastructureException;
-import de.thws.fiw.bs.kpi.application.domain.model.*;
+import de.thws.fiw.bs.kpi.application.domain.model.kpi.KPIId;
+import de.thws.fiw.bs.kpi.application.domain.model.kpiAssignment.KPIAssignment;
+import de.thws.fiw.bs.kpi.application.domain.model.kpiAssignment.KPIAssignmentId;
+import de.thws.fiw.bs.kpi.application.domain.model.project.ProjectId;
 import de.thws.fiw.bs.kpi.application.port.Page;
 import de.thws.fiw.bs.kpi.application.port.PageRequest;
 import de.thws.fiw.bs.kpi.application.port.out.KPIAssignmentRepository;

@@ -1,4 +1,4 @@
-package de.thws.fiw.bs.kpi.application.domain.model;
+package de.thws.fiw.bs.kpi.application.domain.model.kpiEntry;
 
 import java.util.Objects;
 import java.util.UUID;

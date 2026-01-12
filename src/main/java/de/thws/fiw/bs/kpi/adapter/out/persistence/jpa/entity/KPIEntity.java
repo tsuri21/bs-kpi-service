@@ -1,12 +1,10 @@
 package de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.entity;
 
-import de.thws.fiw.bs.kpi.application.domain.model.KPIId;
-import de.thws.fiw.bs.kpi.application.domain.model.TargetDestination;
+import de.thws.fiw.bs.kpi.application.domain.model.kpi.TargetDestination;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 
-import java.net.URI;
 import java.util.UUID;
 
 @Entity

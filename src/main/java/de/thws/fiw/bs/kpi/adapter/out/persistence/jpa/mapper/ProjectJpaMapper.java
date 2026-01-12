@@ -2,9 +2,9 @@ package de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.mapper;
 
 import de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.entity.ProjectEntity;
 import de.thws.fiw.bs.kpi.application.domain.model.Name;
-import de.thws.fiw.bs.kpi.application.domain.model.Project;
-import de.thws.fiw.bs.kpi.application.domain.model.ProjectId;
-import de.thws.fiw.bs.kpi.application.domain.model.RepoUrl;
+import de.thws.fiw.bs.kpi.application.domain.model.project.Project;
+import de.thws.fiw.bs.kpi.application.domain.model.project.ProjectId;
+import de.thws.fiw.bs.kpi.application.domain.model.project.RepoUrl;
 import jakarta.inject.Singleton;
 
 @Singleton

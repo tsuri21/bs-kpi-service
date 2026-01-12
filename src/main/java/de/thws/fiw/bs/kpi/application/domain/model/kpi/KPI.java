@@ -1,10 +1,12 @@
-package de.thws.fiw.bs.kpi.application.domain.model;
+package de.thws.fiw.bs.kpi.application.domain.model.kpi;
+
+import de.thws.fiw.bs.kpi.application.domain.model.Name;
 
 import java.util.Objects;
 
 public class KPI {
     private final KPIId id;
-    private final Name name;
+    private Name name;
     private final TargetDestination destination;
 
     public KPI(KPIId id, Name name, TargetDestination destination) {
@@ -19,6 +21,10 @@ public class KPI {
 
     public Name getName() {
         return name;
+    }
+
+    public void setName(Name name) {
+        this.name = name;
     }
 
     public TargetDestination getDestination() {

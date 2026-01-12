@@ -1,6 +1,8 @@
 package de.thws.fiw.bs.kpi.application.port.in;
 
-import de.thws.fiw.bs.kpi.application.domain.model.*;
+import de.thws.fiw.bs.kpi.application.domain.model.kpi.KPIId;
+import de.thws.fiw.bs.kpi.application.domain.model.kpiAssignment.KPIAssignmentId;
+import de.thws.fiw.bs.kpi.application.domain.model.project.ProjectId;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -10,7 +12,7 @@ class KPIAssignmentCommandTest {
     @Test
     void init_anyArgumentNull_throwsException() {
         KPIAssignmentId id = KPIAssignmentId.newId();
-        KPIId  kpiId = KPIId.newId();
+        KPIId kpiId = KPIId.newId();
         ProjectId projectId = ProjectId.newId();
         double green = 20, yellow = 10, red = 5;
 

@@ -3,12 +3,17 @@ package de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.adapter;
 import de.thws.fiw.bs.kpi.application.domain.exception.AlreadyExistsException;
 import de.thws.fiw.bs.kpi.application.domain.exception.InfrastructureException;
 import de.thws.fiw.bs.kpi.application.domain.model.*;
+import de.thws.fiw.bs.kpi.application.domain.model.kpi.KPI;
+import de.thws.fiw.bs.kpi.application.domain.model.kpi.KPIId;
+import de.thws.fiw.bs.kpi.application.domain.model.kpi.TargetDestination;
+import de.thws.fiw.bs.kpi.application.domain.model.kpiAssignment.KPIAssignment;
+import de.thws.fiw.bs.kpi.application.domain.model.kpiAssignment.KPIAssignmentId;
+import de.thws.fiw.bs.kpi.application.domain.model.project.ProjectId;
 import de.thws.fiw.bs.kpi.application.port.Page;
 import de.thws.fiw.bs.kpi.application.port.PageRequest;
 import io.quarkus.test.TestTransaction;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

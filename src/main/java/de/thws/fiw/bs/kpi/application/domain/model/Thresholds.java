@@ -1,5 +1,7 @@
 package de.thws.fiw.bs.kpi.application.domain.model;
 
+import de.thws.fiw.bs.kpi.application.domain.model.kpi.TargetDestination;
+
 import java.util.Objects;
 
 public final class Thresholds {

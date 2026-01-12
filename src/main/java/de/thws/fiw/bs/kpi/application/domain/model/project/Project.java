@@ -1,4 +1,6 @@
-package de.thws.fiw.bs.kpi.application.domain.model;
+package de.thws.fiw.bs.kpi.application.domain.model.project;
+
+import de.thws.fiw.bs.kpi.application.domain.model.Name;
 
 import java.util.Objects;
 

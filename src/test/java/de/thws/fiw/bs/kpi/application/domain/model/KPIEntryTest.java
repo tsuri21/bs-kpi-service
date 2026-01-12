@@ -1,5 +1,8 @@
 package de.thws.fiw.bs.kpi.application.domain.model;
 
+import de.thws.fiw.bs.kpi.application.domain.model.kpiAssignment.KPIAssignmentId;
+import de.thws.fiw.bs.kpi.application.domain.model.kpiEntry.KPIEntry;
+import de.thws.fiw.bs.kpi.application.domain.model.kpiEntry.KPIEntryId;
 import org.junit.jupiter.api.Test;
 
 import java.time.Clock;

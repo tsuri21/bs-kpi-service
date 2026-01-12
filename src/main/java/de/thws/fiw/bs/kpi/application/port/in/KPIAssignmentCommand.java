@@ -1,8 +1,8 @@
 package de.thws.fiw.bs.kpi.application.port.in;
 
-import de.thws.fiw.bs.kpi.application.domain.model.KPIAssignmentId;
-import de.thws.fiw.bs.kpi.application.domain.model.KPIId;
-import de.thws.fiw.bs.kpi.application.domain.model.ProjectId;
+import de.thws.fiw.bs.kpi.application.domain.model.kpiAssignment.KPIAssignmentId;
+import de.thws.fiw.bs.kpi.application.domain.model.kpi.KPIId;
+import de.thws.fiw.bs.kpi.application.domain.model.project.ProjectId;
 
 import java.util.Objects;
 

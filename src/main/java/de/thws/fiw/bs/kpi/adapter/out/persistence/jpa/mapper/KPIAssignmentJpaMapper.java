@@ -3,11 +3,11 @@ package de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.mapper;
 import de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.entity.KPIAssignmentEntity;
 import de.thws.fiw.bs.kpi.application.domain.model.*;
 
+import de.thws.fiw.bs.kpi.application.domain.model.kpiAssignment.KPIAssignment;
+import de.thws.fiw.bs.kpi.application.domain.model.kpiAssignment.KPIAssignmentId;
+import de.thws.fiw.bs.kpi.application.domain.model.project.ProjectId;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Singleton
 public class KPIAssignmentJpaMapper implements PersistenceMapper<KPIAssignment, KPIAssignmentEntity> {

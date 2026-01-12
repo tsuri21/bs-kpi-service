@@ -1,5 +1,6 @@
 package de.thws.fiw.bs.kpi.application.domain.model;
 
+import de.thws.fiw.bs.kpi.application.domain.model.project.RepoUrl;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;

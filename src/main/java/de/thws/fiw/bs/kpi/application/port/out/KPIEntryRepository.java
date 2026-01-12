@@ -1,6 +1,8 @@
 package de.thws.fiw.bs.kpi.application.port.out;
 
-import de.thws.fiw.bs.kpi.application.domain.model.*;
+import de.thws.fiw.bs.kpi.application.domain.model.kpiAssignment.KPIAssignmentId;
+import de.thws.fiw.bs.kpi.application.domain.model.kpiEntry.KPIEntry;
+import de.thws.fiw.bs.kpi.application.domain.model.kpiEntry.KPIEntryId;
 import de.thws.fiw.bs.kpi.application.port.Page;
 import de.thws.fiw.bs.kpi.application.port.PageRequest;
 
