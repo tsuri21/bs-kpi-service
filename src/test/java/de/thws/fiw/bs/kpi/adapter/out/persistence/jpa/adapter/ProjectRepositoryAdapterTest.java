@@ -171,11 +171,6 @@ class ProjectRepositoryAdapterTest {
     }
 
     @Test
-    void save_nullAsProject_throwsException() {
-        assertThrows(InfrastructureException.class, () -> adapter.save(null));
-    }
-
-    @Test
     void save_duplicateName_throwsException() {
         Name sharedName = new Name("UniqueProject");
         adapter.save(new Project(ProjectId.newId(), sharedName, RepoUrl.parse("https://github.com/org/p1")));
@@ -211,18 +206,6 @@ class ProjectRepositoryAdapterTest {
         assertEquals(id, loaded.getId());
         assertEquals("New Name", loaded.getName().value());
         assertEquals("https://github.com/org/new", loaded.getRepoUrl().toString());
-    }
-
-    @Test
-    void update_nonExistentProject_throwsException() {
-        Project project = new Project(ProjectId.newId(), new Name("Ghost"), RepoUrl.parse("https://github.com/org/ghost"));
-
-        assertThrows(InfrastructureException.class, () -> adapter.update(project));
-    }
-
-    @Test
-    void update_nullAsProject_throwsException() {
-        assertThrows(InfrastructureException.class, () -> adapter.update(null));
     }
 
     @Test

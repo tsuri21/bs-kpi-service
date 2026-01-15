@@ -198,11 +198,6 @@ class KPIAssignmentRepositoryAdapterTest {
     }
 
     @Test
-    void save_nullAsKPIAssignments_throwsException() {
-        assertThrows(InfrastructureException.class, () -> adapter.save(null));
-    }
-
-    @Test
     void save_duplicateKPIIdAndProjectId_throwsException() {
         kpiAdapter.save(defaultK1);
         KPI kpi = defaultK1;
@@ -231,18 +226,6 @@ class KPIAssignmentRepositoryAdapterTest {
         assertEquals(79.0, result.get().getThresholds().getGreen());
         assertEquals(89.0, result.get().getThresholds().getYellow());
         assertEquals(99.0, result.get().getThresholds().getRed());
-    }
-
-    @Test
-    void update_nonExistent_throwsException() {
-        kpiAdapter.save(defaultK1);
-        KPIAssignment ghost = new KPIAssignment(KPIAssignmentId.newId(), createThresholds(), defaultK1, ProjectId.newId());
-        assertThrows(InfrastructureException.class, () -> adapter.update(ghost));
-    }
-
-    @Test
-    void update_nullAsKPIAssignment() {
-        assertThrows(InfrastructureException.class, () -> adapter.update(null));
     }
 
     @Test

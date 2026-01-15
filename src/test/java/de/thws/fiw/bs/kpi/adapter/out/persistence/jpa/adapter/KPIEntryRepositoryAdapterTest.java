@@ -252,11 +252,6 @@ class KPIEntryRepositoryAdapterTest {
     }
 
     @Test
-    void save_nullAsKPIEntry_throwException() {
-        assertThrows(InfrastructureException.class, () -> adapter.save(null));
-    }
-
-    @Test
     void save_duplicateAssignmentAndTimestamp_throwsException() {
         KPIEntry entry = new KPIEntry(KPIEntryId.newId(), assignment1, timestamp1, 20.0, clock);
         adapter.save(entry);

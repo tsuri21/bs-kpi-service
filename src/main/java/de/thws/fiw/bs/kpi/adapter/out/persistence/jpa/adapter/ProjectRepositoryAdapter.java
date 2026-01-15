@@ -65,9 +65,6 @@ public class ProjectRepositoryAdapter implements ProjectRepository {
     @Override
     @Transactional
     public void save(Project project) {
-        if (project == null) {
-            throw new InfrastructureException("Project must not be null");
-        }
         try {
             em.persist(mapper.toPersistenceModel(project));
             em.flush();
@@ -82,14 +79,7 @@ public class ProjectRepositoryAdapter implements ProjectRepository {
     @Override
     @Transactional
     public void update(Project project) {
-        if (project == null) {
-            throw new InfrastructureException("Project must not be null");
-        }
         try {
-            ProjectEntity existingProject = em.find(ProjectEntity.class, project.getId().value());
-            if (existingProject == null) {
-                throw new InfrastructureException("Cannot update non existing project with ID: " + project.getId().value());
-            }
             em.merge(mapper.toPersistenceModel(project));
             em.flush();
         } catch (PersistenceException ex) {
@@ -100,9 +90,6 @@ public class ProjectRepositoryAdapter implements ProjectRepository {
     @Override
     @Transactional
     public void delete(ProjectId id) {
-        if (id == null) {
-            throw new InfrastructureException("Project id must not be null");
-        }
         try {
             ProjectEntity project = em.find(ProjectEntity.class, id.value());
             if (project != null) {

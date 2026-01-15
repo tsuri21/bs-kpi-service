@@ -65,9 +65,6 @@ public class KPIAssignmentRepositoryAdapter implements KPIAssignmentRepository {
     @Override
     @Transactional
     public void save(KPIAssignment kpiAssignment) {
-        if (kpiAssignment == null) {
-            throw new InfrastructureException("KPIAssignment must not be null");
-        }
         try {
             em.persist(mapper.toPersistenceModel(kpiAssignment));
             em.flush();
@@ -82,14 +79,7 @@ public class KPIAssignmentRepositoryAdapter implements KPIAssignmentRepository {
     @Override
     @Transactional
     public void update(KPIAssignment kpiAssignment) {
-        if (kpiAssignment == null) {
-            throw new InfrastructureException("KPIAssignment must not be null");
-        }
         try {
-            KPIAssignmentEntity existingKPIAssignment = em.find(KPIAssignmentEntity.class, kpiAssignment.getId().value());
-            if (existingKPIAssignment == null) {
-                throw new InfrastructureException("Cannot update non existing kpiAssignment with ID: " + kpiAssignment.getId().value());
-            }
             em.merge(mapper.toPersistenceModel(kpiAssignment));
             em.flush();
         } catch (PersistenceException ex) {
@@ -100,9 +90,6 @@ public class KPIAssignmentRepositoryAdapter implements KPIAssignmentRepository {
     @Override
     @Transactional
     public void delete(KPIAssignmentId id) {
-        if (id == null) {
-            throw new InfrastructureException("KPIAssignmentId must not be null");
-        }
         try {
             KPIAssignmentEntity kpiAssignment = em.find(KPIAssignmentEntity.class, id.value());
             if (kpiAssignment != null) {

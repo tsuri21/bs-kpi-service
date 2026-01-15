@@ -64,9 +64,6 @@ public class KPIRepositoryAdapter implements KPIRepository {
     @Override
     @Transactional
     public void save(KPI kpi) {
-        if (kpi == null) {
-            throw new InfrastructureException("KPI must not be null");
-        }
         try {
             em.persist(mapper.toPersistenceModel(kpi));
             em.flush();
@@ -81,14 +78,7 @@ public class KPIRepositoryAdapter implements KPIRepository {
     @Override
     @Transactional
     public void update(KPI kpi) {
-        if (kpi == null) {
-            throw new InfrastructureException("KPI must not be null");
-        }
         try {
-            KPIEntity exsitingKPI = em.find(KPIEntity.class, kpi.getId().value());
-            if (exsitingKPI == null) {
-                throw new InfrastructureException("Cannot update non existing KPI with ID: " + kpi.getId().value());
-            }
             em.merge(mapper.toPersistenceModel(kpi));
             em.flush();
         } catch (PersistenceException ex) {
@@ -99,9 +89,6 @@ public class KPIRepositoryAdapter implements KPIRepository {
     @Override
     @Transactional
     public void delete(KPIId id) {
-        if (id == null) {
-            throw new InfrastructureException("KPI must not be null");
-        }
         try {
             KPIEntity kpi = em.find(KPIEntity.class, id.value());
             if (kpi != null) {

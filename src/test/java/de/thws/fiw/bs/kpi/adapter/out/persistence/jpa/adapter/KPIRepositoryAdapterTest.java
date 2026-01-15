@@ -139,11 +139,6 @@ class KPIRepositoryAdapterTest {
     }
 
     @Test
-    void save_nullAsKPI_throwsException() {
-        assertThrows(InfrastructureException.class, () -> adapter.save(null));
-    }
-
-    @Test
     void save_duplicateName_throwsException() {
         Name sharedName = new Name("UniqueKPI");
         adapter.save(new KPI(KPIId.newId(), sharedName, TargetDestination.DECREASING));
@@ -169,18 +164,6 @@ class KPIRepositoryAdapterTest {
         assertEquals(id, loaded.getId());
         assertEquals("New Name", loaded.getName().value());
         assertEquals(TargetDestination.INCREASING, loaded.getDestination());
-    }
-
-    @Test
-    void update_nonExistentKPI_throwsException() {
-        KPI kpi = new KPI(KPIId.newId(), new Name("Ghost"), TargetDestination.DECREASING);
-
-        assertThrows(InfrastructureException.class, () -> adapter.update(kpi));
-    }
-
-    @Test
-    void update_nullAsKPI_throwsException() {
-        assertThrows(InfrastructureException.class, () -> adapter.update(null));
     }
 
     @Test
