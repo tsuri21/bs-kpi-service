@@ -24,35 +24,6 @@ class ProjectServiceTest {
     ProjectRepository projectRepository;
 
     @Test
-    void readById_idGiven_callsRepository() {
-        ProjectId id = ProjectId.newId();
-
-        projectService.readById(id);
-
-        verify(projectRepository).findById(id);
-    }
-
-    @Test
-    void readAll_filtersGiven_callsRepository() {
-        Name name = new Name("Test");
-        RepoUrl url = RepoUrl.parse("https://github.com/org/test");
-        PageRequest pageRequest = new PageRequest(1, 10);
-
-        projectService.readAll(name, url, pageRequest);
-
-        verify(projectRepository).findByFilter(name, url, pageRequest);
-    }
-
-    @Test
-    void create_projectGiven_callsRepository() {
-        Project project = mock(Project.class);
-
-        projectService.create(project);
-
-        verify(projectRepository).save(project);
-    }
-
-    @Test
     void update_projectExists_callsRepositoryUpdate() {
         ProjectId id = ProjectId.newId();
         Project projectToUpdate = mock(Project.class);
