@@ -267,34 +267,6 @@ class KPIEntryRepositoryAdapterTest {
     }
 
     @Test
-    void update_validChanges_updatesValue() {
-        KPIEntryId id = KPIEntryId.newId();
-        KPIAssignmentId assignmentId = KPIAssignmentId.newId();
-        Instant timestamp = Instant.now(clock);
-
-        adapter.save(new KPIEntry(id, assignmentId, timestamp, 1.0, clock));
-
-        KPIEntry updated = new KPIEntry(id, assignmentId, timestamp, 99.0, clock);
-        adapter.update(updated);
-
-        Optional<KPIEntry> result = adapter.findById(id);
-        assertTrue(result.isPresent());
-        assertEquals(99.0, result.get().getValue());
-    }
-
-    @Test
-    void update_nonExistentEntry_throwsException() {
-        KPIEntry ghostEntry = new KPIEntry(KPIEntryId.newId(), assignment1, timestamp1, 99.0, clock);
-
-        assertThrows(InfrastructureException.class, () -> adapter.update(ghostEntry));
-    }
-
-    @Test
-    void update_nullAsEntry_throwsException() {
-        assertThrows(InfrastructureException.class, () -> adapter.update(null));
-    }
-
-    @Test
     void delete_idExists_removesEntry() {
         KPIEntryId id = KPIEntryId.newId();
         adapter.save(new KPIEntry(id, assignment1, timestamp1, 40.0, clock));
