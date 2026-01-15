@@ -14,13 +14,14 @@ import de.thws.fiw.bs.kpi.application.port.in.EvaluationUseCase;
 import de.thws.fiw.bs.kpi.application.port.out.KPIAssignmentRepository;
 import de.thws.fiw.bs.kpi.application.port.out.KPIEntryRepository;
 import de.thws.fiw.bs.kpi.application.port.out.ProjectRepository;
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
-
+@ApplicationScoped
 public class EvaluationService implements EvaluationUseCase {
 
     @Inject

@@ -8,11 +8,13 @@ import de.thws.fiw.bs.kpi.application.port.Page;
 import de.thws.fiw.bs.kpi.application.port.PageRequest;
 import de.thws.fiw.bs.kpi.application.port.in.KPIEntryUseCase;
 import de.thws.fiw.bs.kpi.application.port.out.KPIEntryRepository;
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 import java.time.Instant;
 import java.util.Optional;
 
+@ApplicationScoped
 public class KPIEntryService implements KPIEntryUseCase {
 
     @Inject
