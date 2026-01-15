@@ -1,8 +1,6 @@
-package de.thws.fiw.bs.kpi.application.domain.model;
+package de.thws.fiw.bs.kpi.application.domain.model.kpi;
 
-import de.thws.fiw.bs.kpi.application.domain.model.kpi.KPI;
-import de.thws.fiw.bs.kpi.application.domain.model.kpi.KPIId;
-import de.thws.fiw.bs.kpi.application.domain.model.kpi.TargetDestination;
+import de.thws.fiw.bs.kpi.application.domain.model.Name;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
