@@ -1,11 +1,11 @@
 package de.thws.fiw.bs.kpi.application.domain.service;
 
 import de.thws.fiw.bs.kpi.application.domain.exception.EvaluationException;
-import de.thws.fiw.bs.kpi.application.domain.model.kpi.EvaluatedKPI;
+import de.thws.fiw.bs.kpi.application.domain.model.kpi.KPIEvaluationResult;
 import de.thws.fiw.bs.kpi.application.domain.model.kpiAssignment.KPIAssignment;
 import de.thws.fiw.bs.kpi.application.domain.model.kpiAssignment.KPIAssignmentId;
 import de.thws.fiw.bs.kpi.application.domain.model.kpiEntry.KPIEntry;
-import de.thws.fiw.bs.kpi.application.domain.model.project.EvaluatedProject;
+import de.thws.fiw.bs.kpi.application.domain.model.project.ProjectEvaluationResult;
 import de.thws.fiw.bs.kpi.application.domain.model.project.Project;
 import de.thws.fiw.bs.kpi.application.domain.model.project.ProjectId;
 import de.thws.fiw.bs.kpi.application.port.Page;
@@ -17,9 +17,9 @@ import de.thws.fiw.bs.kpi.application.port.out.ProjectRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @ApplicationScoped
 public class EvaluationService implements EvaluationUseCase {
@@ -34,18 +34,18 @@ public class EvaluationService implements EvaluationUseCase {
     ProjectRepository projectRepository;
 
     @Override
-    public EvaluatedKPI evaluateKPI(KPIAssignmentId id) {
+    public KPIEvaluationResult evaluateKPI(KPIAssignmentId id) {
         KPIAssignment kpiAssignment = kpiAssignmentRepository.findById(id)
                 .orElseThrow(() -> new EvaluationException("KPIAssignment could not be found"));
 
         KPIEntry kpiEntry = kpiEntryRepository.findLatest(id)
                 .orElseThrow(() -> new EvaluationException("KPI has no entries"));
 
-        return EvaluatedKPI.evaluateKPI(kpiAssignment.getKpi(), kpiAssignment.getThresholds(), kpiEntry);
+        return KPIEvaluationResult.evaluate(kpiAssignment, kpiEntry);
     }
 
     @Override
-    public EvaluatedProject evaluateProject(ProjectId id) {
+    public ProjectEvaluationResult evaluateProject(ProjectId id) {
         Project project = projectRepository.findById(id)
                 .orElseThrow(() -> new EvaluationException("Project could not be found"));
 
@@ -55,27 +55,19 @@ public class EvaluationService implements EvaluationUseCase {
             throw new EvaluationException("Project has no KPI assignments");
         }
 
-        List<EvaluatedKPI> evaluatedKPIs = new ArrayList<>();
-        EvaluatedKPI focusKpi = null;
-        Instant focusTimestamp = null;
+        Map<KPIAssignmentId, KPIEntry> latestEntries = kpiEntryRepository.findLatestEntriesByProject(id);
+        List<KPIEvaluationResult> results = new ArrayList<>();
 
-        for (KPIAssignment kpiAssignment : kpiAssignments) {
-            EvaluatedKPI kpi = evaluateKPI(kpiAssignment.getId());
-            KPIEntry kpiEntry = kpiEntryRepository.findLatest(kpiAssignment.getId())
-                    .orElseThrow(() -> new EvaluationException("KPI with id " + kpi.getId() + " has no entries"));
+        for (KPIAssignment assignment : kpiAssignments) {
+            KPIEntry entry = latestEntries.get(assignment.getId());
 
-            if (focusKpi == null) {
-                focusKpi = kpi;
-                focusTimestamp = kpiEntry.getTimestamp();
-            } else if (kpi.getStatus().compareTo(focusKpi.getStatus()) > 0) {
-                focusKpi = kpi;
-                focusTimestamp = kpiEntry.getTimestamp();
-            } else if (kpi.getStatus().equals(focusKpi.getStatus()) && kpiEntry.getTimestamp().isAfter(focusTimestamp)) {
-                focusKpi = kpi;
-                focusTimestamp = kpiEntry.getTimestamp();
+            // TODO: discuss if in this case the assignment should be skipped or an exception should be thrown
+            //  -> I thought this was specified in out project specification but is is not
+            if (entry == null) {
+                throw new EvaluationException("KPI Assignment " + assignment.getId() + " has no entries");
             }
-            evaluatedKPIs.add(evaluateKPI(kpiAssignment.getId()));
+            results.add(KPIEvaluationResult.evaluate(assignment, entry));
         }
-        return new EvaluatedProject(project, focusKpi.getStatus(), focusKpi, evaluatedKPIs);
+        return ProjectEvaluationResult.aggregate(project, results);
     }
 }
