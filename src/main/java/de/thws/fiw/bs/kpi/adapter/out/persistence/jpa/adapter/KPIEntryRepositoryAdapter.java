@@ -8,6 +8,7 @@ import de.thws.fiw.bs.kpi.application.domain.exception.InfrastructureException;
 import de.thws.fiw.bs.kpi.application.domain.model.kpiAssignment.KPIAssignmentId;
 import de.thws.fiw.bs.kpi.application.domain.model.kpiEntry.KPIEntry;
 import de.thws.fiw.bs.kpi.application.domain.model.kpiEntry.KPIEntryId;
+import de.thws.fiw.bs.kpi.application.domain.model.project.ProjectId;
 import de.thws.fiw.bs.kpi.application.port.Page;
 import de.thws.fiw.bs.kpi.application.port.PageRequest;
 import de.thws.fiw.bs.kpi.application.port.out.KPIEntryRepository;
@@ -24,7 +25,10 @@ import jakarta.transaction.Transactional;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class KPIEntryRepositoryAdapter implements KPIEntryRepository {
@@ -65,6 +69,24 @@ public class KPIEntryRepositoryAdapter implements KPIEntryRepository {
         catch (PersistenceException ex){
             throw new InfrastructureException("Database access failed for AssignmentID: " + id.value(), ex);
         }
+    }
+
+    @Override
+    public Map<KPIAssignmentId, KPIEntry> findLatestEntriesByProject(ProjectId projectId) {
+        String sql = "SELECT e FROM KPIEntryEntity e " +
+                "WHERE e.assignmentId IN (SELECT a.id FROM KPIAssignmentEntity a WHERE a.projectId = :pid) " +
+                "AND e.timestamp = (SELECT MAX(e2.timestamp) FROM KPIEntryEntity e2 WHERE e2.assignmentId = e.assignmentId)";
+
+        List<KPIEntryEntity> entities = em.createQuery(sql, KPIEntryEntity.class)
+                .setParameter("pid", projectId.value())
+                .getResultList();
+
+        return entities.stream()
+                .map(mapper::toDomainModel)
+                .collect(Collectors.toMap(
+                        KPIEntry::getKpiAssignmentId,
+                        Function.identity()
+                ));
     }
 
     @Override

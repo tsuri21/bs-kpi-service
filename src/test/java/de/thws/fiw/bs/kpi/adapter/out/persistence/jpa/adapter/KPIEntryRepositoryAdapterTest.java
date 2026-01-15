@@ -1,21 +1,28 @@
 package de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.adapter;
 
+import de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.entity.KPIAssignmentEntity;
+import de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.entity.KPIEntity;
 import de.thws.fiw.bs.kpi.application.domain.exception.AlreadyExistsException;
+import de.thws.fiw.bs.kpi.application.domain.model.kpi.TargetDestination;
 import de.thws.fiw.bs.kpi.application.domain.model.kpiAssignment.KPIAssignmentId;
 import de.thws.fiw.bs.kpi.application.domain.model.kpiEntry.KPIEntry;
 import de.thws.fiw.bs.kpi.application.domain.model.kpiEntry.KPIEntryId;
+import de.thws.fiw.bs.kpi.application.domain.model.project.ProjectId;
 import de.thws.fiw.bs.kpi.application.port.Page;
 import de.thws.fiw.bs.kpi.application.port.PageRequest;
 import io.quarkus.test.TestTransaction;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -26,19 +33,38 @@ class KPIEntryRepositoryAdapterTest {
     @Inject
     KPIEntryRepositoryAdapter adapter;
 
+    @Inject
+    EntityManager em;
+
     private final PageRequest defaultPage = new PageRequest(1, 10);
     private static final Clock FIXED_CLOCK = Clock.fixed(Instant.parse("2026-01-07T10:00:00Z"), ZoneOffset.UTC);
-
 
     KPIAssignmentId assignment1 = KPIAssignmentId.newId();
     KPIAssignmentId assignment2 = KPIAssignmentId.newId();
     Instant timestamp1 = Instant.parse("2026-01-06T12:00:00Z");
     Instant timestamp2 = Instant.parse("2026-01-05T10:00:00Z");
 
-    private void createDefaultEntry() {
+    private void createDefaultEntries() {
         adapter.save(KPIEntry.createNew(KPIEntryId.newId(), assignment1, timestamp1, 20.0, FIXED_CLOCK));
         adapter.save(KPIEntry.createNew(KPIEntryId.newId(), assignment1, timestamp2, 18.0, FIXED_CLOCK));
         adapter.save(KPIEntry.createNew(KPIEntryId.newId(), assignment2, timestamp1, 30.0, FIXED_CLOCK));
+    }
+
+    private void createAssignmentForProject(KPIAssignmentId assignmentId, ProjectId projectId, String kpiName) {
+        KPIEntity kpi = new KPIEntity(UUID.randomUUID(), kpiName, TargetDestination.DECREASING);
+        em.persist(kpi);
+
+        KPIAssignmentEntity entity = new KPIAssignmentEntity(
+                assignmentId.value(),
+                5.0,
+                10.0,
+                15.0,
+                kpi,
+                projectId.value()
+        );
+
+        em.persist(entity);
+        em.flush();
     }
 
     @Test
@@ -67,7 +93,7 @@ class KPIEntryRepositoryAdapterTest {
 
     @Test
     void findLatest_assignmentExists_returnsMostRecentEntry() {
-        createDefaultEntry();
+        createDefaultEntries();
 
         Optional<KPIEntry> latest = adapter.findLatest(assignment1);
 
@@ -84,8 +110,64 @@ class KPIEntryRepositoryAdapterTest {
     }
 
     @Test
+    void findLatestEntriesByProject_multipleAssignmentsWithHistory_returnsMapWithOnlyLatestEntries() {
+        ProjectId projectId = ProjectId.newId();
+        KPIAssignmentId assignmentIdA = KPIAssignmentId.newId();
+        KPIAssignmentId assignmentIdB = KPIAssignmentId.newId();
+        createAssignmentForProject(assignmentIdA, projectId, "Test1");
+        createAssignmentForProject(assignmentIdB, projectId, "Test2");
+
+        adapter.save(KPIEntry.createNew(KPIEntryId.newId(), assignmentIdA, timestamp2, 18.0, FIXED_CLOCK));
+        adapter.save(KPIEntry.createNew(KPIEntryId.newId(), assignmentIdA, timestamp1, 20.0, FIXED_CLOCK));
+
+        adapter.save(KPIEntry.createNew(KPIEntryId.newId(), assignmentIdB, timestamp1, 30.0, FIXED_CLOCK));
+
+        Map<KPIAssignmentId, KPIEntry> result = adapter.findLatestEntriesByProject(projectId);
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+
+        assertTrue(result.containsKey(assignmentIdA));
+        assertEquals(20.0, result.get(assignmentIdA).getValue());
+        assertEquals(timestamp1, result.get(assignmentIdA).getTimestamp());
+
+        assertTrue(result.containsKey(assignmentIdB));
+        assertEquals(30.0, result.get(assignmentIdB).getValue());
+    }
+
+    @Test
+    void findLatestEntriesByProject_entriesFromOtherProjects_areIgnored() {
+        ProjectId projectIdA = ProjectId.newId();
+        KPIAssignmentId assignmentIdA = KPIAssignmentId.newId();
+        createAssignmentForProject(assignmentIdA, projectIdA, "Test1");
+        adapter.save(KPIEntry.createNew(KPIEntryId.newId(), assignmentIdA, timestamp1, 100.0, FIXED_CLOCK));
+
+        ProjectId projectIdB = ProjectId.newId();
+        KPIAssignmentId assignmentIdB = KPIAssignmentId.newId();
+        createAssignmentForProject(assignmentIdB, projectIdB, "Test2");
+        adapter.save(KPIEntry.createNew(KPIEntryId.newId(), assignmentIdB, timestamp1, 999.0, FIXED_CLOCK));
+
+        Map<KPIAssignmentId, KPIEntry> result = adapter.findLatestEntriesByProject(projectIdA);
+
+        assertEquals(1, result.size());
+        assertTrue(result.containsKey(assignmentIdA));
+        assertFalse(result.containsKey(assignmentIdB));
+        assertEquals(100.0, result.get(assignmentIdA).getValue());
+    }
+
+    @Test
+    void findLatestEntriesByProject_noAssignmentsOrEntries_returnsEmptyMap() {
+        ProjectId projectId = ProjectId.newId();
+
+        Map<KPIAssignmentId, KPIEntry> result = adapter.findLatestEntriesByProject(projectId);
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
     void findByFilter_filtersAreNull_returnsAll() {
-        createDefaultEntry();
+        createDefaultEntries();
 
         Page<KPIEntry> result = adapter.findByFilter(null, null, null, defaultPage);
 
@@ -100,7 +182,7 @@ class KPIEntryRepositoryAdapterTest {
 
     @Test
     void findByFilter_onlyAssignmentId_returnsFiltered() {
-        createDefaultEntry();
+        createDefaultEntries();
 
         Page<KPIEntry> result = adapter.findByFilter(assignment1, null, null, defaultPage);
 
@@ -114,7 +196,7 @@ class KPIEntryRepositoryAdapterTest {
 
     @Test
     void findByFilter_onlyFrom_returnsEntriesAfterOrAt() {
-        createDefaultEntry();
+        createDefaultEntries();
 
         Instant from = Instant.parse("2026-01-06T12:00:00Z");
 
@@ -127,7 +209,7 @@ class KPIEntryRepositoryAdapterTest {
 
     @Test
     void findByFilter_onlyTo_returnsEntriesBeforeOrAt() {
-        createDefaultEntry();
+        createDefaultEntries();
 
         Instant to = Instant.parse("2026-01-05T10:00:00Z");
 
@@ -139,7 +221,7 @@ class KPIEntryRepositoryAdapterTest {
 
     @Test
     void findByFilter_idAndFrom_returnsIntersection() {
-        createDefaultEntry();
+        createDefaultEntries();
 
         Instant from = Instant.parse("2026-01-06T12:00:00Z");
 
@@ -151,7 +233,7 @@ class KPIEntryRepositoryAdapterTest {
 
     @Test
     void findByFilter_idAndTo_returnsIntersection() {
-        createDefaultEntry();
+        createDefaultEntries();
 
         Instant to = Instant.parse("2026-01-05T10:00:00Z");
 
@@ -163,7 +245,7 @@ class KPIEntryRepositoryAdapterTest {
 
     @Test
     void findByFilter_fromAndTo_returnsRange() {
-        createDefaultEntry();
+        createDefaultEntries();
 
         Instant from = Instant.parse("2026-01-05T10:00:00Z");
         Instant to = Instant.parse("2026-01-05T11:00:00Z");
@@ -176,7 +258,7 @@ class KPIEntryRepositoryAdapterTest {
 
     @Test
     void findByFilter_allCriteria_returnsSpecificEntry() {
-        createDefaultEntry();
+        createDefaultEntries();
 
         Instant from = Instant.parse("2026-01-06T12:00:00Z");
         Instant to = Instant.parse("2026-01-06T13:00:00Z");
@@ -190,7 +272,7 @@ class KPIEntryRepositoryAdapterTest {
 
     @Test
     void findByFilter_noMatch_returnsEmptyPage() {
-        createDefaultEntry();
+        createDefaultEntries();
 
         KPIAssignmentId unknownId = KPIAssignmentId.newId();
 
@@ -205,7 +287,7 @@ class KPIEntryRepositoryAdapterTest {
 
     @Test
     void findByFilter_secondPage_returnsSecondEntry() {
-        createDefaultEntry();
+        createDefaultEntries();
 
         PageRequest secondPageRequest = new PageRequest(2, 1);
 
@@ -220,7 +302,7 @@ class KPIEntryRepositoryAdapterTest {
 
     @Test
     void findByFilter_pageOutOfBounds_returnsEmptyPage() {
-        createDefaultEntry();
+        createDefaultEntries();
 
         PageRequest outOfBoundsRequest = new PageRequest(10, 10);
 
