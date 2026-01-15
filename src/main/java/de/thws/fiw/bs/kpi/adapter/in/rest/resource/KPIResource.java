@@ -47,13 +47,14 @@ public class KPIResource {
         KPIDTO kpiDTO = mapper.toApiModel(kpi);
 
         linkService.setSelfLink(kpiDTO);
-        Link self = linkService.createSelfLink(id);
-        Link delete = linkService.createDeleteLink(id);
-        Link update = linkService.createUpdateLink(id);
-        Link allProjects = linkService.createGetAllLink();
+        Link self = linkService.buildSelfLink(id);
+        Link delete = linkService.buildDeleteLink(id);
+        Link update = linkService.buildPartialUpdateLink(id);
+        String allKpis = linkService.buildCollectionLink("name");
 
         return Response.ok(kpiDTO)
-                .links(self, delete, update, allProjects)
+                .links(self, delete, update)
+                .header("Link", allKpis)
                 .build();
     }
 
@@ -71,15 +72,13 @@ public class KPIResource {
         List<KPIDTO> kpis = mapper.toApiModels(kpiPage.content());
 
         linkService.setSelfLinks(kpis);
-        Link create = linkService.createCreateLink();
-        Link desc = linkService.createDescriptionLink();
-        String search = linkService.createSearchTemplateLink("name");
-        Link[] pagination = linkService.createPaginationLinks(kpiPage);
+        Link create = linkService.buildCreateLink();
+        Link desc = linkService.buildDescriptionLink();
+        Link[] pagination = linkService.buildPaginationLinks(kpiPage);
 
         return Response.ok(kpis)
                 .links(create, desc)
                 .links(pagination)
-                .header("Link", search)
                 .header("X-Total-Count", kpiPage.totalElements())
                 .build();
     }
@@ -91,11 +90,10 @@ public class KPIResource {
         kpiUseCase.create(kpi);
 
         UUID newId = kpi.getId().value();
-        Link self = linkService.createSelfLink(newId);
-        Link allKPIs = linkService.createGetAllLink();
 
-        return Response.created(linkService.createLocationUri(newId))
-                .links(self, allKPIs)
+        return Response.created(linkService.buildLocationUri(newId))
+                .links(linkService.buildSelfLink(newId))
+                .header("Link", linkService.buildCollectionLink("name"))
                 .build();
     }
 
@@ -110,7 +108,7 @@ public class KPIResource {
         kpiUseCase.updateName(new KPIId(id), new Name(kpiDto.getName()));
 
         return Response.noContent()
-                .links(linkService.createSelfLink(id))
+                .links(linkService.buildSelfLink(id))
                 .build();
     }
 
@@ -120,7 +118,7 @@ public class KPIResource {
         kpiUseCase.delete(new KPIId(id));
 
         return Response.noContent()
-                .links(linkService.createGetAllLink())
+                .header("Link", linkService.buildCollectionLink("name"))
                 .build();
     }
 }

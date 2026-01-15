@@ -27,67 +27,90 @@ public class HypermediaLinkService {
         this.resourceInfo = resourceInfo;
     }
 
-    public URI createLocationUri(Class<?> pathClass, UUID id) {
+    public URI buildLocationUri(Class<?> pathClass, UUID id) {
         return uriInfo.getBaseUriBuilder().path(pathClass).path(id.toString()).build();
     }
 
-    public URI createLocationUri(UUID id) {
-        return createLocationUri(resourceInfo.getResourceClass(), id);
+    public URI buildLocationUri(UUID id) {
+        return buildLocationUri(resourceInfo.getResourceClass(), id);
     }
 
-    public Link createSelfLink(Class<?> pathClass, UUID id) {
-        return createCustomLink(pathClass, "self", "GET", id);
+    public Link buildSelfLink(Class<?> pathClass, UUID id) {
+        return buildCustomLink(pathClass, "self", "GET", id);
     }
 
-    public Link createSelfLink(UUID id) {
-        return createSelfLink(resourceInfo.getResourceClass(), id);
+    public Link buildSelfLink(UUID id) {
+        return buildSelfLink(resourceInfo.getResourceClass(), id);
     }
 
-    public Link createGetAllLink(Class<?> pathClass) {
-        return createCustomLink(pathClass, "get" + getRelEntityName(pathClass) + "Items", "GET");
-    }
+    public String buildCollectionLink(Class<?> pathClass, String... queryParams) {
+        String base = uriInfo.getBaseUriBuilder()
+                .path(pathClass)
+                .build()
+                .toString();
 
-    public Link createGetAllLink() {
-        return createGetAllLink(resourceInfo.getResourceClass());
-    }
-
-    public Link createCreateLink(Class<?> pathClass) {
-        return createCustomLink(pathClass, "create" + getRelEntityName(pathClass), "POST");
-    }
-
-    public Link createCreateLink() {
-        return createCreateLink(resourceInfo.getResourceClass());
-    }
-
-    public Link createUpdateLink(Class<?> pathClass, UUID id) {
-        return createCustomLink(pathClass, "update" + getRelEntityName(pathClass), "PUT", id);
-    }
-
-    public Link createUpdateLink(UUID id) {
-        return createUpdateLink(resourceInfo.getResourceClass(), id);
-    }
-
-    public Link createDeleteLink(Class<?> pathClass, UUID id) {
-        return createCustomLink(pathClass, "delete" + getRelEntityName(pathClass), "DELETE", id);
-    }
-
-    public Link createDeleteLink(UUID id) {
-        return createDeleteLink(resourceInfo.getResourceClass(), id);
-    }
-
-    public String createSearchTemplateLink(Class<?> pathClass, String... params) {
-        String base = uriInfo.getBaseUriBuilder().path(pathClass).build().toString();
-        String queryParams = String.join(",", params);
-        String rel = "search" + getRelEntityName(pathClass) + "Items";
+        String rel = "getAll" + getRelEntityName(pathClass) + "Items";
         String type = getMediaType();
-        return String.format("<%s{?%s}>; method=\"GET\"; rel=\"%s\"; type=\"%s\"", base, queryParams, rel, type);
+
+        StringBuilder linkBuilder = new StringBuilder();
+        linkBuilder.append("<").append(base);
+
+        boolean isTemplated = false;
+
+        if (queryParams != null && queryParams.length > 0) {
+            linkBuilder.append("{?").append(String.join(",", queryParams)).append("}");
+            isTemplated = true;
+        }
+
+        linkBuilder.append(">; ");
+        linkBuilder.append("method=\"GET\"; ");
+        linkBuilder.append("rel=\"").append(rel).append("\"; ");
+        linkBuilder.append("type=\"").append(type).append("\"");
+
+        if (isTemplated) {
+            linkBuilder.append("; templated=\"true\"");
+        }
+
+        return linkBuilder.toString();
     }
 
-    public String createSearchTemplateLink(String... params) {
-        return createSearchTemplateLink(resourceInfo.getResourceClass(), params);
+    public String buildCollectionLink(String ...queryParams) {
+        return buildCollectionLink(resourceInfo.getResourceClass(), queryParams);
     }
 
-    public Link createDescriptionLink(Class<?> pathClass) {
+    public Link buildCreateLink(Class<?> pathClass) {
+        return buildCustomLink(pathClass, "create" + getRelEntityName(pathClass), "POST");
+    }
+
+    public Link buildCreateLink() {
+        return buildCreateLink(resourceInfo.getResourceClass());
+    }
+
+    public Link buildUpdateLink(Class<?> pathClass, UUID id) {
+        return buildCustomLink(pathClass, "update" + getRelEntityName(pathClass), "PUT", id);
+    }
+
+    public Link buildUpdateLink(UUID id) {
+        return buildUpdateLink(resourceInfo.getResourceClass(), id);
+    }
+
+    public Link buildPartialUpdateLink(Class<?> pathClass, UUID id) {
+        return buildCustomLink(pathClass, "update" + getRelEntityName(pathClass), "PATCH", id);
+    }
+
+    public Link buildPartialUpdateLink(UUID id) {
+        return buildPartialUpdateLink(resourceInfo.getResourceClass(), id);
+    }
+
+    public Link buildDeleteLink(Class<?> pathClass, UUID id) {
+        return buildCustomLink(pathClass, "delete" + getRelEntityName(pathClass), "DELETE", id);
+    }
+
+    public Link buildDeleteLink(UUID id) {
+        return buildDeleteLink(resourceInfo.getResourceClass(), id);
+    }
+
+    public Link buildDescriptionLink(Class<?> pathClass) {
         URI schemaUri = uriInfo.getBaseUriBuilder().path(pathClass).path("schema").build();
         return Link.fromUri(schemaUri)
                 .rel("describedby")
@@ -96,11 +119,11 @@ public class HypermediaLinkService {
                 .build();
     }
 
-    public Link createDescriptionLink() {
-        return createDescriptionLink(resourceInfo.getResourceClass());
+    public Link buildDescriptionLink() {
+        return buildDescriptionLink(resourceInfo.getResourceClass());
     }
 
-    public Link[] createPaginationLinks(Page<?> page) {
+    public Link[] buildPaginationLinks(Page<?> page) {
         List<Link> links = new ArrayList<>();
         String mediaType = getMediaType();
         int currentPage = page.pageRequest().pageNumber();
@@ -140,7 +163,7 @@ public class HypermediaLinkService {
         dtos.forEach(this::setSelfLink);
     }
 
-    Link createCustomLink(Class<?> targetRes, String rel, String method) {
+    Link buildCustomLink(Class<?> targetRes, String rel, String method) {
         return Link.fromUriBuilder(uriInfo.getBaseUriBuilder().path(targetRes))
                 .rel(rel)
                 .param("method", method)
@@ -148,7 +171,7 @@ public class HypermediaLinkService {
                 .build();
     }
 
-    Link createCustomLink(Class<?> targetRes, String rel, String method, UUID id) {
+    Link buildCustomLink(Class<?> targetRes, String rel, String method, UUID id) {
         return Link.fromUriBuilder(uriInfo.getBaseUriBuilder().path(targetRes).path(id.toString()))
                 .rel(rel)
                 .param("method", method)

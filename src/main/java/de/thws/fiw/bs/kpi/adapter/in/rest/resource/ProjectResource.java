@@ -45,13 +45,14 @@ public class ProjectResource {
         ProjectDTO projectDTO = mapper.toApiModel(project);
 
         linkService.setSelfLink(projectDTO);
-        Link self = linkService.createSelfLink(id);
-        Link delete = linkService.createDeleteLink(id);
-        Link update = linkService.createUpdateLink(id);
-        Link allProjects = linkService.createGetAllLink();
+        Link self = linkService.buildSelfLink(id);
+        Link delete = linkService.buildDeleteLink(id);
+        Link update = linkService.buildUpdateLink(id);
+        String allProjects = linkService.buildCollectionLink("name", "repoUrl");
 
         return Response.ok(projectDTO)
-                .links(self, delete, update, allProjects)
+                .links(self, delete, update)
+                .header("Link", allProjects)
                 .build();
     }
 
@@ -70,15 +71,13 @@ public class ProjectResource {
         List<ProjectDTO> projects = mapper.toApiModels(projectPage.content());
 
         linkService.setSelfLinks(projects);
-        Link create = linkService.createCreateLink();
-        Link desc = linkService.createDescriptionLink();
-        String search = linkService.createSearchTemplateLink("name", "repoUrl");
-        Link[] pagination = linkService.createPaginationLinks(projectPage);
+        Link create = linkService.buildCreateLink();
+        Link desc = linkService.buildDescriptionLink();
+        Link[] pagination = linkService.buildPaginationLinks(projectPage);
 
         return Response.ok(projects)
                 .links(create, desc)
                 .links(pagination)
-                .header("Link", search)
                 .header("X-Total-Count", projectPage.totalElements())
                 .build();
     }
@@ -90,11 +89,10 @@ public class ProjectResource {
         projectUseCase.create(project);
 
         UUID newId = project.getId().value();
-        Link self = linkService.createSelfLink(newId);
-        Link allProjects = linkService.createGetAllLink();
 
-        return Response.created(linkService.createLocationUri(newId))
-                .links(self, allProjects)
+        return Response.created(linkService.buildLocationUri(newId))
+                .links(linkService.buildSelfLink(newId))
+                .header("Link", linkService.buildCollectionLink("name", "repoUrl"))
                 .build();
     }
 
@@ -110,7 +108,7 @@ public class ProjectResource {
         projectUseCase.update(project);
 
         return Response.noContent()
-                .links(linkService.createSelfLink(id))
+                .links(linkService.buildSelfLink(id))
                 .build();
     }
 
@@ -120,7 +118,7 @@ public class ProjectResource {
         projectUseCase.delete(new ProjectId(id));
 
         return Response.noContent()
-                .links(linkService.createGetAllLink())
+                .header("Link", linkService.buildCollectionLink("name", "repoUrl"))
                 .build();
     }
 }

@@ -17,11 +17,12 @@ public class RootResource {
     @Cache(noStore = true)
     public Response showLinks() {
 
-        Link getAllProjects = linkService.createGetAllLink(ProjectResource.class);
-        Link getAllKPIs = linkService.createGetAllLink(KPIResource.class);
+        String getAllProjects = linkService.buildCollectionLink(ProjectResource.class);
+        String getAllKPIs = linkService.buildCollectionLink(KPIResource.class);
 
         return Response.ok()
-                .links(getAllProjects, getAllKPIs)
+                .header("Link", getAllProjects)
+                .header("Link", getAllKPIs)
                 .build();
     }
 }

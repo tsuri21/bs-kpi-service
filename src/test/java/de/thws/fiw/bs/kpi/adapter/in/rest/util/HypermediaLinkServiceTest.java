@@ -80,8 +80,8 @@ class HypermediaLinkServiceTest {
     }
 
     @Test
-    void createCustomLink_withClassOnly_usesPathAnnotationValue() {
-        Link link = service.createCustomLink(TestResource.class, "getAll", "GET");
+    void buildCustomLink_withClassOnly_usesPathAnnotationValue() {
+        Link link = service.buildCustomLink(TestResource.class, "getAll", "GET");
 
         assertEquals(BASE_URI + "tests", link.getUri().toString());
         assertEquals("getAll", link.getRel());
@@ -89,9 +89,9 @@ class HypermediaLinkServiceTest {
     }
 
     @Test
-    void createCustomLink_withClassAndId_appendsIdToAnnotatedPath() {
+    void buildCustomLink_withClassAndId_appendsIdToAnnotatedPath() {
         UUID id = UUID.fromString("11111111-2222-3333-4444-555555555555");
-        Link link = service.createCustomLink(TestResource.class, "self", "PUT", id);
+        Link link = service.buildCustomLink(TestResource.class, "self", "PUT", id);
 
         assertEquals(BASE_URI + "tests/11111111-2222-3333-4444-555555555555", link.getUri().toString());
         assertEquals("self", link.getRel());
@@ -99,29 +99,29 @@ class HypermediaLinkServiceTest {
     }
 
     @Test
-    void createLocationUri_withClassAndId_returnsFullUri() {
+    void buildLocationUri_withClassAndId_returnsFullUri() {
         UUID id = UUID.randomUUID();
 
-        URI result = service.createLocationUri(TestResource.class, id);
+        URI result = service.buildLocationUri(TestResource.class, id);
 
         assertEquals(BASE_URI + "tests/" + id, result.toString());
     }
 
     @Test
-    void createLocationUri_withContextAndId_returnsFullUri() {
+    void buildLocationUri_withContextAndId_returnsFullUri() {
         UUID id = UUID.randomUUID();
         doReturn(TestResource.class).when(resourceInfo).getResourceClass();
 
-        URI result = service.createLocationUri(id);
+        URI result = service.buildLocationUri(id);
 
         assertEquals(BASE_URI + "tests/" + id, result.toString());
     }
 
     @Test
-    void createSelfLink_withClassAndId_returnsCorrectLink() {
+    void buildSelfLink_withClassAndId_returnsCorrectLink() {
         UUID id = UUID.randomUUID();
 
-        Link result = service.createSelfLink(TestResource.class, id);
+        Link result = service.buildSelfLink(TestResource.class, id);
 
         assertEquals(BASE_URI + "tests/" + id, result.getUri().toString());
         assertEquals("self", result.getRel());
@@ -129,11 +129,11 @@ class HypermediaLinkServiceTest {
     }
 
     @Test
-    void createSelfLink_withContextAndId_returnsCorrectLink() {
+    void buildSelfLink_withContextAndId_returnsCorrectLink() {
         UUID id = UUID.randomUUID();
         doReturn(TestResource.class).when(resourceInfo).getResourceClass();
 
-        Link result = service.createSelfLink(id);
+        Link result = service.buildSelfLink(id);
 
         assertEquals(BASE_URI + "tests/" + id, result.getUri().toString());
         assertEquals("self", result.getRel());
@@ -141,113 +141,135 @@ class HypermediaLinkServiceTest {
     }
 
     @Test
-    void createGetAllLink_withClass_returnsCorrectLink() {
-        Link result = service.createGetAllLink(TestResource.class);
+    void buildCollectionLink_withClass_returnsCorrectLink() {
+        String result = service.buildCollectionLink(TestResource.class);
 
-        assertEquals(BASE_URI + "tests", result.getUri().toString());
-        assertEquals("getTestItems", result.getRel());
-        assertEquals("GET", result.getParams().get("method"));
+        String expected = "<" + BASE_URI + "tests>; method=\"GET\"; rel=\"getAllTestItems\"; type=\"application/json\"";
+        assertEquals(expected, result);
     }
 
     @Test
-    void createGetAllLink_withContext_returnsCorrectLink() {
-        doReturn(TestResource.class).when(resourceInfo).getResourceClass();
-        Link result = service.createGetAllLink();
-
-        assertEquals(BASE_URI + "tests", result.getUri().toString());
-        assertEquals("getTestItems", result.getRel());
-        assertEquals("GET", result.getParams().get("method"));
-    }
-
-    @Test
-    void createCreateLink_withClass_returnsCorrectLink() {
-        Link result = service.createCreateLink(TestResource.class);
-
-        assertEquals(BASE_URI + "tests", result.getUri().toString());
-        assertEquals("createTest", result.getRel());
-        assertEquals("POST", result.getParams().get("method"));
-    }
-
-    @Test
-    void createCreateLink_withContext_returnsCorrectLink() {
-        doReturn(TestResource.class).when(resourceInfo).getResourceClass();
-
-        Link result = service.createCreateLink();
-
-        assertEquals(BASE_URI + "tests", result.getUri().toString());
-        assertEquals("createTest", result.getRel());
-        assertEquals("POST", result.getParams().get("method"));
-    }
-
-    @Test
-    void createUpdateLink_withClassAndId_returnsCorrectLink() {
-        UUID id = UUID.randomUUID();
-
-        Link result = service.createUpdateLink(TestResource.class, id);
-
-        assertEquals(BASE_URI + "tests/" + id, result.getUri().toString());
-        assertEquals("updateTest", result.getRel());
-        assertEquals("PUT", result.getParams().get("method"));
-    }
-
-    @Test
-    void createUpdateLink_withContextAndId_returnsCorrectLink() {
-        UUID id = UUID.randomUUID();
-        doReturn(TestResource.class).when(resourceInfo).getResourceClass();
-
-        Link result = service.createUpdateLink(id);
-
-        assertEquals(BASE_URI + "tests/" + id, result.getUri().toString());
-        assertEquals("updateTest", result.getRel());
-        assertEquals("PUT", result.getParams().get("method"));
-    }
-
-    @Test
-    void createDeleteLink_withClassAndId_returnsCorrectLink() {
-        UUID id = UUID.randomUUID();
-
-        Link result = service.createDeleteLink(TestResource.class, id);
-
-        assertEquals(BASE_URI + "tests/" + id, result.getUri().toString());
-        assertEquals("deleteTest", result.getRel());
-        assertEquals("DELETE", result.getParams().get("method"));
-    }
-
-    @Test
-    void createDeleteLink_withContextAndId_returnsCorrectLink() {
-        UUID id = UUID.randomUUID();
-        doReturn(TestResource.class).when(resourceInfo).getResourceClass();
-
-        Link result = service.createDeleteLink(id);
-
-        assertEquals(BASE_URI + "tests/" + id, result.getUri().toString());
-        assertEquals("deleteTest", result.getRel());
-        assertEquals("DELETE", result.getParams().get("method"));
-    }
-
-    @Test
-    void createSearchTemplateLink_withClassAndParams_returnsUriTemplateLinkAsString() {
+    void buildCollectionLink_withClassAndParams_returnsUriTemplateLinkAsString() {
         String[] queryParams = {"name", "category"};
 
-        String result = service.createSearchTemplateLink(TestResource.class, queryParams);
+        String result = service.buildCollectionLink(TestResource.class, queryParams);
 
-        String expected = "<" + BASE_URI + "tests{?name,category}>; method=\"GET\"; rel=\"searchTestItems\"; type=\"application/json\"";
+        String expected = "<" + BASE_URI + "tests{?name,category}>; method=\"GET\"; rel=\"getAllTestItems\"; type=\"application/json\"; templated=\"true\"";
         assertEquals(expected, result);
     }
 
     @Test
-    void createSearchTemplateLink_withContextAndParams_returnsUriTemplateLinkAsString() {
+    void buildCollectionLink_withContext_returnsCorrectLink() {
         doReturn(TestResource.class).when(resourceInfo).getResourceClass();
 
-        String result = service.createSearchTemplateLink("q");
+        String result = service.buildCollectionLink();
 
-        String expected = "<" + BASE_URI + "tests{?q}>; method=\"GET\"; rel=\"searchTestItems\"; type=\"application/json\"";
+        String expected = "<" + BASE_URI + "tests>; method=\"GET\"; rel=\"getAllTestItems\"; type=\"application/json\"";
         assertEquals(expected, result);
     }
 
     @Test
-    void createDescriptionLink_withClass_returnsLinkToSchema() {
-        Link result = service.createDescriptionLink(TestResource.class);
+    void buildCollectionLink_withContextAndParams_returnsUriTemplateLinkAsString() {
+        doReturn(TestResource.class).when(resourceInfo).getResourceClass();
+
+        String result = service.buildCollectionLink("q");
+
+        String expected = "<" + BASE_URI + "tests{?q}>; method=\"GET\"; rel=\"getAllTestItems\"; type=\"application/json\"; templated=\"true\"";
+        assertEquals(expected, result);
+    }
+
+    @Test
+    void buildCreateLink_withClass_returnsCorrectLink() {
+        Link result = service.buildCreateLink(TestResource.class);
+
+        assertEquals(BASE_URI + "tests", result.getUri().toString());
+        assertEquals("createTest", result.getRel());
+        assertEquals("POST", result.getParams().get("method"));
+    }
+
+    @Test
+    void buildCreateLink_withContext_returnsCorrectLink() {
+        doReturn(TestResource.class).when(resourceInfo).getResourceClass();
+
+        Link result = service.buildCreateLink();
+
+        assertEquals(BASE_URI + "tests", result.getUri().toString());
+        assertEquals("createTest", result.getRel());
+        assertEquals("POST", result.getParams().get("method"));
+    }
+
+    @Test
+    void buildUpdateLink_withClassAndId_returnsCorrectLink() {
+        UUID id = UUID.randomUUID();
+
+        Link result = service.buildUpdateLink(TestResource.class, id);
+
+        assertEquals(BASE_URI + "tests/" + id, result.getUri().toString());
+        assertEquals("updateTest", result.getRel());
+        assertEquals("PUT", result.getParams().get("method"));
+    }
+
+    @Test
+    void buildUpdateLink_withContextAndId_returnsCorrectLink() {
+        UUID id = UUID.randomUUID();
+        doReturn(TestResource.class).when(resourceInfo).getResourceClass();
+
+        Link result = service.buildUpdateLink(id);
+
+        assertEquals(BASE_URI + "tests/" + id, result.getUri().toString());
+        assertEquals("updateTest", result.getRel());
+        assertEquals("PUT", result.getParams().get("method"));
+    }
+
+    @Test
+    void buildPartialUpdateLink_withClassAndId_returnsCorrectLink() {
+        UUID id = UUID.randomUUID();
+
+        Link result = service.buildPartialUpdateLink(TestResource.class, id);
+
+        assertEquals(BASE_URI + "tests/" + id, result.getUri().toString());
+        assertEquals("updateTest", result.getRel());
+        assertEquals("PATCH", result.getParams().get("method"));
+    }
+
+    @Test
+    void buildPartialUpdateLink_withContextAndId_returnsCorrectLink() {
+        UUID id = UUID.randomUUID();
+        doReturn(TestResource.class).when(resourceInfo).getResourceClass();
+
+        Link result = service.buildPartialUpdateLink(id);
+
+        assertEquals(BASE_URI + "tests/" + id, result.getUri().toString());
+        assertEquals("updateTest", result.getRel());
+        assertEquals("PATCH", result.getParams().get("method"));
+    }
+
+    @Test
+    void buildDeleteLink_withClassAndId_returnsCorrectLink() {
+        UUID id = UUID.randomUUID();
+
+        Link result = service.buildDeleteLink(TestResource.class, id);
+
+        assertEquals(BASE_URI + "tests/" + id, result.getUri().toString());
+        assertEquals("deleteTest", result.getRel());
+        assertEquals("DELETE", result.getParams().get("method"));
+    }
+
+    @Test
+    void buildDeleteLink_withContextAndId_returnsCorrectLink() {
+        UUID id = UUID.randomUUID();
+        doReturn(TestResource.class).when(resourceInfo).getResourceClass();
+
+        Link result = service.buildDeleteLink(id);
+
+        assertEquals(BASE_URI + "tests/" + id, result.getUri().toString());
+        assertEquals("deleteTest", result.getRel());
+        assertEquals("DELETE", result.getParams().get("method"));
+    }
+
+    @Test
+    void buildDescriptionLink_withClass_returnsLinkToSchema() {
+        Link result = service.buildDescriptionLink(TestResource.class);
 
         assertEquals(BASE_URI + "tests/schema", result.getUri().toString());
         assertEquals("describedby", result.getRel());
@@ -256,10 +278,10 @@ class HypermediaLinkServiceTest {
     }
 
     @Test
-    void createDescriptionLink_withContext_returnsLinkToSchema() {
+    void buildDescriptionLink_withContext_returnsLinkToSchema() {
         doReturn(TestResource.class).when(resourceInfo).getResourceClass();
 
-        Link result = service.createDescriptionLink();
+        Link result = service.buildDescriptionLink();
 
         assertEquals(BASE_URI + "tests/schema", result.getUri().toString());
         assertEquals("describedby", result.getRel());
@@ -268,14 +290,14 @@ class HypermediaLinkServiceTest {
     }
 
     @Test
-    void createPaginationLinks_firstPage_returnNextLink() {
+    void buildPaginationLinks_firstPage_returnNextLink() {
         String requestUri = BASE_URI + "tests?name=Test&sort=date";
         when(uriInfo.getRequestUriBuilder()).thenAnswer(inv -> new ResteasyUriBuilderImpl().uri(requestUri));
 
         PageRequest pageRequest = new PageRequest(1, 10);
         Page<String> page = new Page<>(List.of("item"), pageRequest, 100);
 
-        Link[] links = service.createPaginationLinks(page);
+        Link[] links = service.buildPaginationLinks(page);
 
         assertEquals(1, links.length);
 
@@ -287,14 +309,14 @@ class HypermediaLinkServiceTest {
     }
 
     @Test
-    void createPaginationLinks_middlePage_returnsPrevAndNextLinks() {
+    void buildPaginationLinks_middlePage_returnsPrevAndNextLinks() {
         String requestUri = BASE_URI + "tests?q=Test&page=5";
         when(uriInfo.getRequestUriBuilder()).thenAnswer(inv -> new ResteasyUriBuilderImpl().uri(requestUri));
 
         PageRequest pageRequest = new PageRequest(5, 10);
         Page<String> page = new Page<>(List.of("item"), pageRequest, 100);
 
-        Link[] links = service.createPaginationLinks(page);
+        Link[] links = service.buildPaginationLinks(page);
 
         assertEquals(2, links.length);
 
@@ -311,14 +333,14 @@ class HypermediaLinkServiceTest {
     }
 
     @Test
-    void createPaginationLinks_lastPage_returnsPrevLink() {
+    void buildPaginationLinks_lastPage_returnsPrevLink() {
         String requestUri = BASE_URI + "tests?page=10";
         when(uriInfo.getRequestUriBuilder()).thenAnswer(inv -> new ResteasyUriBuilderImpl().uri(requestUri));
 
         PageRequest pageRequest = new PageRequest(10, 10);
         Page<String> page = new Page<>(List.of("item"), pageRequest, 100);
 
-        Link[] links = service.createPaginationLinks(page);
+        Link[] links = service.buildPaginationLinks(page);
 
         assertEquals(1, links.length);
 
