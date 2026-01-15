@@ -40,8 +40,8 @@ public class KPIAssignmentRepositoryAdapter implements KPIAssignmentRepository {
         try {
             KPIAssignmentEntity kpiAssignment = em.find(KPIAssignmentEntity.class, id.value());
             return Optional.ofNullable(kpiAssignment).map(mapper::toDomainModel);
-        } catch (PersistenceException pe) {
-            throw new InfrastructureException("Database access failed for ID: " + id.value(), pe);
+        } catch (PersistenceException ex) {
+            throw new InfrastructureException("Database access failed for ID: " + id.value(), ex);
         }
     }
 
@@ -57,8 +57,8 @@ public class KPIAssignmentRepositoryAdapter implements KPIAssignmentRepository {
 
             List<KPIAssignmentEntity> entities = fetchPageResults(cb, kpiId, projectId, pageRequest);
             return new Page<>(mapper.toDomainModels(entities), pageRequest, total);
-        } catch (PersistenceException pe) {
-            throw new InfrastructureException("Failed to execute kpiAssignment filter query", pe);
+        } catch (PersistenceException ex) {
+            throw new InfrastructureException("Failed to execute kpiAssignment filter query", ex);
         }
     }
 
@@ -70,7 +70,7 @@ public class KPIAssignmentRepositoryAdapter implements KPIAssignmentRepository {
             em.flush();
         } catch (PersistenceException ex) {
             if (ExceptionUtils.isUniqueConstraintViolation(ex)) {
-                throw new AlreadyExistsException("KPIAssignment with kpiId and projectId already exists", ex);//stimmt das so?
+                throw new AlreadyExistsException("KPIAssignment with kpiId and projectId already exists", ex);
             }
             throw new InfrastructureException("Failed to save new kpiAssignment", ex);
         }

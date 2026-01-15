@@ -40,8 +40,8 @@ public class KPIEntryRepositoryAdapter implements KPIEntryRepository {
         try{
             KPIEntryEntity kpiEntry = em.find(KPIEntryEntity.class, id.value());
             return Optional.ofNullable(kpiEntry).map(mapper::toDomainModel);
-        } catch (PersistenceException pe){
-            throw new InfrastructureException("Database access failed for ID: " + id.value(), pe);
+        } catch (PersistenceException ex){
+            throw new InfrastructureException("Database access failed for ID: " + id.value(), ex);
         }
     }
 
@@ -62,8 +62,8 @@ public class KPIEntryRepositoryAdapter implements KPIEntryRepository {
 
             return results.stream().map(mapper::toDomainModel).findFirst();
         }
-        catch (PersistenceException pe){
-            throw new InfrastructureException("Database access failed for AssignmentID: " + id.value(), pe);
+        catch (PersistenceException ex){
+            throw new InfrastructureException("Database access failed for AssignmentID: " + id.value(), ex);
         }
     }
 
@@ -79,8 +79,8 @@ public class KPIEntryRepositoryAdapter implements KPIEntryRepository {
 
             List<KPIEntryEntity> entities = fetchPageResults(cb, id, from, to, pageRequest);
             return new Page<>(mapper.toDomainModels(entities), pageRequest, total);
-        } catch (PersistenceException pe){
-            throw new InfrastructureException("Failed to execute KPIEntry filter query", pe);
+        } catch (PersistenceException ex){
+            throw new InfrastructureException("Failed to execute KPIEntry filter query", ex);
         }
     }
 
@@ -90,11 +90,11 @@ public class KPIEntryRepositoryAdapter implements KPIEntryRepository {
         try{
             em.persist(mapper.toPersistenceModel(kpiEntry));
             em.flush();
-        } catch (PersistenceException pe){
-            if(ExceptionUtils.isUniqueConstraintViolation(pe)){
-                throw new AlreadyExistsException("KPIEntry with kpiAssignmentId and timestamp already exists", pe);
+        } catch (PersistenceException ex){
+            if(ExceptionUtils.isUniqueConstraintViolation(ex)){
+                throw new AlreadyExistsException("KPIEntry with kpiAssignmentId and timestamp already exists", ex);
             }
-            throw new InfrastructureException("Failed to save new kpiEntry", pe);
+            throw new InfrastructureException("Failed to save new kpiEntry", ex);
         }
     }
 
@@ -106,8 +106,8 @@ public class KPIEntryRepositoryAdapter implements KPIEntryRepository {
             if(kpiEntry != null){
                 em.remove(kpiEntry);
             }
-        } catch (PersistenceException pe){
-            throw new InfrastructureException("Failed to delete kpiEntry with ID: " + id.value(), pe);
+        } catch (PersistenceException ex){
+            throw new InfrastructureException("Failed to delete kpiEntry with ID: " + id.value(), ex);
         }
     }
 
