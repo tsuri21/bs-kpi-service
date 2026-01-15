@@ -52,15 +52,19 @@ class KPIServiceTest {
     }
 
     @Test
-    void update_kpiExists_callsRepositoryUpdate() {
+    void updateName_kpiExists_setsNameAndCallsRepositoryUpdate() {
         KPIId id = KPIId.newId();
-        KPI kpiToUpdate = mock(KPI.class);
+        Name newName = new Name("New");
 
-        when(kpiToUpdate.getId()).thenReturn(id);
-        when(kpiRepository.findById(id)).thenReturn(Optional.of(kpiToUpdate));
+        KPI existing = new KPI(id, new Name("Old"), TargetDestination.DECREASING);
+        when(kpiRepository.findById(id)).thenReturn(Optional.of(existing));
 
-        kpiService.update(kpiToUpdate);
-        verify(kpiRepository).update(kpiToUpdate);
+        kpiService.updateName(id, newName);
+        ArgumentCaptor<KPI> captor = ArgumentCaptor.forClass(KPI.class);
+        verify(kpiRepository).update(captor.capture());
+
+        KPI updated = captor.getValue();
+        assertEquals(newName, updated.getName());
     }
 
     @Test
