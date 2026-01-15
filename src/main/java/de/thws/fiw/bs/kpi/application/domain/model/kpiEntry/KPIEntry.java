@@ -13,11 +13,23 @@ public class KPIEntry {
     private final Instant timestamp;
     private final double value;
 
-    public KPIEntry(KPIEntryId id, KPIAssignmentId kpiAssignmentId, Instant timestamp, double value, Clock clock) {
+    private KPIEntry(KPIEntryId id, KPIAssignmentId kpiAssignmentId, Instant timestamp, double value) {
         this.id = Objects.requireNonNull(id, "KPIEntry id must not be null");
         this.kpiAssignmentId = Objects.requireNonNull(kpiAssignmentId, "KPIAssignment id must not be null");
-        this.timestamp = validateTimestamp(timestamp, clock);
+        this.timestamp = Objects.requireNonNull(timestamp, "Timestamp must not be null");
         this.value = value;
+    }
+
+    public static KPIEntry createNew(KPIEntryId id, KPIAssignmentId kpiAssignmentId, Instant timestamp, double value, Clock clock) {
+        Objects.requireNonNull(clock, "Clock must not be null");
+        if (timestamp.isAfter(Instant.now(clock))) {
+            throw new IllegalArgumentException("Timestamp must not be in the future");
+        }
+        return new KPIEntry(id, kpiAssignmentId, timestamp, value);
+    }
+
+    public static KPIEntry reconstruct(KPIEntryId id, KPIAssignmentId kpiAssignmentId, Instant timestamp, double value) {
+        return new KPIEntry(id, kpiAssignmentId, timestamp, value);
     }
 
     public KPIEntryId getId() {
@@ -34,15 +46,5 @@ public class KPIEntry {
 
     public double getValue() {
         return value;
-    }
-
-    private static Instant validateTimestamp(Instant ts, Clock clock) {
-        Objects.requireNonNull(clock, "Clock must not be null");
-        Objects.requireNonNull(ts, "Timestamp must not be null");
-
-        if (ts.isAfter(Instant.now(clock))) {
-            throw new IllegalArgumentException("Timestamp must not be in the future");
-        }
-        return ts;
     }
 }

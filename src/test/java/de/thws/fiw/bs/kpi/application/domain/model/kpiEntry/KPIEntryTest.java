@@ -20,13 +20,13 @@ class KPIEntryTest {
         Instant ts = Instant.parse("2025-01-01T09:59:00Z");
 
         assertThrows(NullPointerException.class,
-                () -> new KPIEntry(null, assignmentId, ts, 10.0, FIXED_CLOCK));
+                () -> KPIEntry.createNew(null, assignmentId, ts, 10.0, FIXED_CLOCK));
         assertThrows(NullPointerException.class,
-                () -> new KPIEntry(id, null, ts, 10.0, FIXED_CLOCK));
+                () -> KPIEntry.createNew(id, null, ts, 10.0, FIXED_CLOCK));
         assertThrows(NullPointerException.class,
-                () -> new KPIEntry(id, assignmentId, null, 10.0, FIXED_CLOCK));
+                () -> KPIEntry.createNew(id, assignmentId, null, 10.0, FIXED_CLOCK));
         assertThrows(NullPointerException.class,
-                () -> new KPIEntry(id, assignmentId, ts, 10.0, null));
+                () -> KPIEntry.createNew(id, assignmentId, ts, 10.0, null));
     }
 
     @Test
@@ -37,7 +37,7 @@ class KPIEntryTest {
 
         IllegalArgumentException ex = assertThrows(
                 IllegalArgumentException.class,
-                () -> new KPIEntry(id, assignmentId, future, 10.0, FIXED_CLOCK)
+                () -> KPIEntry.createNew(id, assignmentId, future, 10.0, FIXED_CLOCK)
         );
 
         assertEquals("Timestamp must not be in the future", ex.getMessage());
@@ -49,7 +49,7 @@ class KPIEntryTest {
         KPIAssignmentId assignmentId = KPIAssignmentId.newId();
         Instant past = Instant.parse("2025-01-01T09:59:00Z");
 
-        KPIEntry entry = new KPIEntry(id, assignmentId, past, 42.5, FIXED_CLOCK);
+        KPIEntry entry = KPIEntry.createNew(id, assignmentId, past, 42.5, FIXED_CLOCK);
 
         assertEquals(id, entry.getId());
         assertEquals(assignmentId, entry.getKpiAssignmentId());

@@ -1,7 +1,6 @@
 package de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.adapter;
 
 import de.thws.fiw.bs.kpi.application.domain.exception.AlreadyExistsException;
-import de.thws.fiw.bs.kpi.application.domain.exception.InfrastructureException;
 import de.thws.fiw.bs.kpi.application.domain.model.kpiAssignment.KPIAssignmentId;
 import de.thws.fiw.bs.kpi.application.domain.model.kpiEntry.KPIEntry;
 import de.thws.fiw.bs.kpi.application.domain.model.kpiEntry.KPIEntryId;
@@ -28,7 +27,7 @@ class KPIEntryRepositoryAdapterTest {
     KPIEntryRepositoryAdapter adapter;
 
     private final PageRequest defaultPage = new PageRequest(1, 10);
-    private static final Clock clock = Clock.fixed(Instant.parse("2026-01-07T10:00:00Z"), ZoneOffset.UTC);
+    private static final Clock FIXED_CLOCK = Clock.fixed(Instant.parse("2026-01-07T10:00:00Z"), ZoneOffset.UTC);
 
 
     KPIAssignmentId assignment1 = KPIAssignmentId.newId();
@@ -37,15 +36,15 @@ class KPIEntryRepositoryAdapterTest {
     Instant timestamp2 = Instant.parse("2026-01-05T10:00:00Z");
 
     private void createDefaultEntry() {
-        adapter.save(new KPIEntry(KPIEntryId.newId(), assignment1, timestamp1, 20.0, clock));
-        adapter.save(new KPIEntry(KPIEntryId.newId(), assignment1, timestamp2, 18.0, clock));
-        adapter.save(new KPIEntry(KPIEntryId.newId(), assignment2, timestamp1, 30.0, clock));
+        adapter.save(KPIEntry.createNew(KPIEntryId.newId(), assignment1, timestamp1, 20.0, FIXED_CLOCK));
+        adapter.save(KPIEntry.createNew(KPIEntryId.newId(), assignment1, timestamp2, 18.0, FIXED_CLOCK));
+        adapter.save(KPIEntry.createNew(KPIEntryId.newId(), assignment2, timestamp1, 30.0, FIXED_CLOCK));
     }
 
     @Test
     void findById_idExists_returnsEntry() {
         KPIEntryId id = KPIEntryId.newId();
-        KPIEntry entry = new KPIEntry(id, assignment1, timestamp1, 42.0, clock);
+        KPIEntry entry = KPIEntry.createNew(id, assignment1, timestamp1, 42.0, FIXED_CLOCK);
 
         adapter.save(entry);
 
@@ -234,7 +233,7 @@ class KPIEntryRepositoryAdapterTest {
     @Test
     void save_validEntry_persists() {
         KPIEntryId id = KPIEntryId.newId();
-        KPIEntry entry = new KPIEntry(id, assignment1, timestamp1, 40.0, clock);
+        KPIEntry entry = KPIEntry.createNew(id, assignment1, timestamp1, 40.0, FIXED_CLOCK);
 
         adapter.save(entry);
 
@@ -253,10 +252,10 @@ class KPIEntryRepositoryAdapterTest {
 
     @Test
     void save_duplicateAssignmentAndTimestamp_throwsException() {
-        KPIEntry entry = new KPIEntry(KPIEntryId.newId(), assignment1, timestamp1, 20.0, clock);
+        KPIEntry entry = KPIEntry.createNew(KPIEntryId.newId(), assignment1, timestamp1, 20.0, FIXED_CLOCK);
         adapter.save(entry);
 
-        KPIEntry duplicate = new KPIEntry(KPIEntryId.newId(), assignment1, timestamp1, 30.0, clock);
+        KPIEntry duplicate = KPIEntry.createNew(KPIEntryId.newId(), assignment1, timestamp1, 30.0, FIXED_CLOCK);
 
         assertThrows(AlreadyExistsException.class, () -> adapter.save(duplicate));
     }
@@ -264,7 +263,7 @@ class KPIEntryRepositoryAdapterTest {
     @Test
     void delete_idExists_removesEntry() {
         KPIEntryId id = KPIEntryId.newId();
-        adapter.save(new KPIEntry(id, assignment1, timestamp1, 40.0, clock));
+        adapter.save(KPIEntry.createNew(id, assignment1, timestamp1, 40.0, FIXED_CLOCK));
 
         assertTrue(adapter.findById(id).isPresent());
 
@@ -280,7 +279,7 @@ class KPIEntryRepositoryAdapterTest {
     @Test
     void delete_idMissing_doesNothing() {
         KPIEntryId existingId = KPIEntryId.newId();
-        adapter.save(new KPIEntry(existingId, assignment1, timestamp1, 10.0, clock));
+        adapter.save(KPIEntry.createNew(existingId, assignment1, timestamp1, 10.0, FIXED_CLOCK));
 
         KPIEntryId nonExistentId = KPIEntryId.newId();
         adapter.delete(nonExistentId);

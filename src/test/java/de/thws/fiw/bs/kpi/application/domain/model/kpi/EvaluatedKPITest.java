@@ -37,7 +37,7 @@ class EvaluatedKPITest {
 
     @Test
     void evaluateKPI_anyArgumentNull_throwsException() {
-        KPIEntry latest = new KPIEntry(KPIEntryId.newId(), KPIAssignmentId.newId(), Instant.parse("2025-05-01T11:00:00Z"), 4.0, FIXED_CLOCK);
+        KPIEntry latest = KPIEntry.createNew(KPIEntryId.newId(), KPIAssignmentId.newId(), Instant.parse("2025-05-01T11:00:00Z"), 4.0, FIXED_CLOCK);
         KPI kpi = createKPI(TargetDestination.INCREASING);
         Thresholds thresholds = createThresholdsForIncreasing();
 
@@ -48,7 +48,7 @@ class EvaluatedKPITest {
 
     @Test
     void evaluateKPI_destinationIncreasing_returnGreen() {
-        KPIEntry latest = new KPIEntry(KPIEntryId.newId(), KPIAssignmentId.newId(), Instant.parse("2025-05-01T11:00:00Z"), 4.0, FIXED_CLOCK);
+        KPIEntry latest = KPIEntry.createNew(KPIEntryId.newId(), KPIAssignmentId.newId(), Instant.parse("2025-05-01T11:00:00Z"), 4.0, FIXED_CLOCK);
         KPI kpi = createKPI(TargetDestination.INCREASING);
         Thresholds thresholds = createThresholdsForIncreasing();
 
@@ -57,7 +57,7 @@ class EvaluatedKPITest {
 
     @Test
     void evaluateKPI_destinationIncreasing_returnYellow() {
-        KPIEntry latest = new KPIEntry(KPIEntryId.newId(), KPIAssignmentId.newId(), Instant.parse("2025-05-01T11:00:00Z"), 2.5, FIXED_CLOCK);
+        KPIEntry latest = KPIEntry.createNew(KPIEntryId.newId(), KPIAssignmentId.newId(), Instant.parse("2025-05-01T11:00:00Z"), 2.5, FIXED_CLOCK);
         KPI kpi = createKPI(TargetDestination.INCREASING);
         Thresholds thresholds = createThresholdsForIncreasing();
 
@@ -66,7 +66,7 @@ class EvaluatedKPITest {
 
     @Test
     void evaluateKPI_destinationIncreasing_returnRed() {
-        KPIEntry latest = new KPIEntry(KPIEntryId.newId(), KPIAssignmentId.newId(), Instant.parse("2025-05-01T11:00:00Z"), 1.5, FIXED_CLOCK);
+        KPIEntry latest = KPIEntry.createNew(KPIEntryId.newId(), KPIAssignmentId.newId(), Instant.parse("2025-05-01T11:00:00Z"), 1.5, FIXED_CLOCK);
         KPI kpi = createKPI(TargetDestination.INCREASING);
         Thresholds thresholds = createThresholdsForIncreasing();
 
@@ -75,7 +75,7 @@ class EvaluatedKPITest {
 
     @Test
     void evaluateKPI_destinationDecreasing_returnGreen() {
-        KPIEntry latest = new KPIEntry(KPIEntryId.newId(), KPIAssignmentId.newId(), Instant.parse("2025-05-01T11:00:00Z"), 0.5, FIXED_CLOCK);
+        KPIEntry latest = KPIEntry.createNew(KPIEntryId.newId(), KPIAssignmentId.newId(), Instant.parse("2025-05-01T11:00:00Z"), 0.5, FIXED_CLOCK);
         KPI kpi = createKPI(TargetDestination.DECREASING);
         Thresholds thresholds = createThresholdsForDecreasing();
 
@@ -84,7 +84,7 @@ class EvaluatedKPITest {
 
     @Test
     void evaluateKPI_destinationDecreasing_returnYellow() {
-        KPIEntry latest = new KPIEntry(KPIEntryId.newId(), KPIAssignmentId.newId(), Instant.parse("2025-05-01T11:00:00Z"), 1.5, FIXED_CLOCK);
+        KPIEntry latest = KPIEntry.createNew(KPIEntryId.newId(), KPIAssignmentId.newId(), Instant.parse("2025-05-01T11:00:00Z"), 1.5, FIXED_CLOCK);
         KPI kpi = createKPI(TargetDestination.DECREASING);
         Thresholds thresholds = createThresholdsForDecreasing();
 
@@ -93,7 +93,7 @@ class EvaluatedKPITest {
 
     @Test
     void evaluateKPI_destinationDecreasing_returnRed() {
-        KPIEntry latest = new KPIEntry(KPIEntryId.newId(), KPIAssignmentId.newId(), Instant.parse("2025-05-01T11:00:00Z"), 2.5, FIXED_CLOCK);
+        KPIEntry latest = KPIEntry.createNew(KPIEntryId.newId(), KPIAssignmentId.newId(), Instant.parse("2025-05-01T11:00:00Z"), 2.5, FIXED_CLOCK);
         KPI kpi = createKPI(TargetDestination.DECREASING);
         Thresholds thresholds = createThresholdsForDecreasing();
 
@@ -102,7 +102,7 @@ class EvaluatedKPITest {
 
     @Test
     void evaluateKPI_destinationRange_returnGreen() {
-        KPIEntry latest = new KPIEntry(KPIEntryId.newId(), KPIAssignmentId.newId(), Instant.parse("2025-05-01T11:00:00Z"), 11.0, FIXED_CLOCK);
+        KPIEntry latest = KPIEntry.createNew(KPIEntryId.newId(), KPIAssignmentId.newId(), Instant.parse("2025-05-01T11:00:00Z"), 11.0, FIXED_CLOCK);
         KPI kpi = createKPI(TargetDestination.RANGE);
         Thresholds thresholds = createThresholdsForRange();
 
@@ -111,7 +111,7 @@ class EvaluatedKPITest {
 
     @Test
     void evaluateKPI_destinationRange_returnYellow() {
-        KPIEntry latest = new KPIEntry(KPIEntryId.newId(), KPIAssignmentId.newId(), Instant.parse("2025-05-01T11:00:00Z"), 24.0, FIXED_CLOCK);
+        KPIEntry latest = KPIEntry.createNew(KPIEntryId.newId(), KPIAssignmentId.newId(), Instant.parse("2025-05-01T11:00:00Z"), 24.0, FIXED_CLOCK);
         KPI kpi = createKPI(TargetDestination.RANGE);
         Thresholds thresholds = createThresholdsForRange();
 
@@ -120,7 +120,7 @@ class EvaluatedKPITest {
 
     @Test
     void evaluateKPI_destinationRange_returnRed() {
-        KPIEntry latest = new KPIEntry(KPIEntryId.newId(), KPIAssignmentId.newId(), Instant.parse("2025-05-01T11:00:00Z"), 27.0, FIXED_CLOCK);
+        KPIEntry latest = KPIEntry.createNew(KPIEntryId.newId(), KPIAssignmentId.newId(), Instant.parse("2025-05-01T11:00:00Z"), 27.0, FIXED_CLOCK);
         KPI kpi = createKPI(TargetDestination.RANGE);
         Thresholds thresholds = createThresholdsForRange();
 

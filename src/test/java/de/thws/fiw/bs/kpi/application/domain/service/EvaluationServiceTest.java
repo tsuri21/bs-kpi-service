@@ -57,7 +57,7 @@ class EvaluationServiceTest {
         );
 
         KPIEntryId entryId = KPIEntryId.newId();
-        KPIEntry entry = new KPIEntry(entryId, assignmentId, Instant.parse("2025-01-01T11:00:00Z"), 10.5, FIXED_CLOCK);
+        KPIEntry entry = KPIEntry.createNew(entryId, assignmentId, Instant.parse("2025-01-01T11:00:00Z"), 10.5, FIXED_CLOCK);
 
         when(kpiAssignmentRepository.findById(assignmentId)).thenReturn(Optional.of(kpiAssignment));
         when(kpiEntryRepository.findLatest(assignmentId)).thenReturn(Optional.of(entry));

@@ -13,9 +13,6 @@ import java.time.Clock;
 @Singleton
 public class KPIEntryJpaMapper implements PersistenceMapper<KPIEntry, KPIEntryEntity> {
 
-    @Inject
-    Clock clock;
-
     @Override
     public KPIEntryEntity toPersistenceModel(KPIEntry kpiEntry) {
         return new KPIEntryEntity(
@@ -28,12 +25,11 @@ public class KPIEntryJpaMapper implements PersistenceMapper<KPIEntry, KPIEntryEn
 
     @Override
     public KPIEntry toDomainModel(KPIEntryEntity kpiEntryEntity) {
-        return new KPIEntry(
+        return KPIEntry.reconstruct(
                 new KPIEntryId(kpiEntryEntity.getId()),
                 new KPIAssignmentId(kpiEntryEntity.getAssignmentId()),
                 kpiEntryEntity.getTimestamp(),
-                kpiEntryEntity.getMeasurement(),
-                clock
+                kpiEntryEntity.getMeasurement()
         );
     }
 }
