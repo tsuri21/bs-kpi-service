@@ -57,10 +57,51 @@ public final class Thresholds {
         return new Thresholds(green, yellow, targetValue);
     }
 
-    public double getGreen() { return green; }
+    public Status calculateStatus(double currentValue, TargetDestination destination) {
+        Objects.requireNonNull(destination, "Destination must not be null");
 
-    public double getYellow() { return yellow; }
+        return switch (destination) {
+            case INCREASING -> calculateIncreasing(currentValue);
+            case DECREASING -> calculateDecreasing(currentValue);
+            case RANGE -> calculateRange(currentValue);
+        };
+    }
 
-    public Double getTargetValue() { return targetValue; }
+    private Status calculateIncreasing(double value) {
+        if (value >= green) return Status.GREEN;
+        if (value >= yellow) return Status.YELLOW;
+        return Status.RED;
+    }
+
+    private Status calculateDecreasing(double value) {
+        if (value <= green) return Status.GREEN;
+        if (value <= yellow) return Status.YELLOW;
+        return Status.RED;
+    }
+
+    private Status calculateRange(double value) {
+        if (targetValue == null) {
+            throw new IllegalStateException("Target value must be present for RANGE calculation");
+        }
+
+        double deviation = Math.abs(value - targetValue);
+
+        if (deviation <= green) return Status.GREEN;
+        if (deviation <= yellow) return Status.YELLOW;
+
+        return Status.RED;
+    }
+
+    public double getGreen() {
+        return green;
+    }
+
+    public double getYellow() {
+        return yellow;
+    }
+
+    public Double getTargetValue() {
+        return targetValue;
+    }
 }
 
