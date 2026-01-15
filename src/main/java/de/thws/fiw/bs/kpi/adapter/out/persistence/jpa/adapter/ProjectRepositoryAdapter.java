@@ -69,7 +69,7 @@ public class ProjectRepositoryAdapter implements ProjectRepository {
             em.persist(mapper.toPersistenceModel(project));
             em.flush();
         } catch (PersistenceException ex) {
-            if (ExceptionUtils.isConstraintViolation(ex)) {
+            if (ExceptionUtils.isUniqueConstraintViolation(ex)) {
                 throw new AlreadyExistsException("Project with name or repoUrl already exists", ex);
             }
             throw new InfrastructureException("Failed to save new project: " + project.getName().value(), ex);

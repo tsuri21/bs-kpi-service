@@ -69,7 +69,7 @@ public class KPIAssignmentRepositoryAdapter implements KPIAssignmentRepository {
             em.persist(mapper.toPersistenceModel(kpiAssignment));
             em.flush();
         } catch (PersistenceException ex) {
-            if (ExceptionUtils.isConstraintViolation(ex)) {
+            if (ExceptionUtils.isUniqueConstraintViolation(ex)) {
                 throw new AlreadyExistsException("KPIAssignment with kpiId and projectId already exists", ex);//stimmt das so?
             }
             throw new InfrastructureException("Failed to save new kpiAssignment", ex);

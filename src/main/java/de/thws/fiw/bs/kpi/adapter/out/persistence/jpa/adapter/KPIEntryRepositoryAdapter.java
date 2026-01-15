@@ -91,7 +91,7 @@ public class KPIEntryRepositoryAdapter implements KPIEntryRepository {
             em.persist(mapper.toPersistenceModel(kpiEntry));
             em.flush();
         } catch (PersistenceException pe){
-            if(ExceptionUtils.isConstraintViolation(pe)){
+            if(ExceptionUtils.isUniqueConstraintViolation(pe)){
                 throw new AlreadyExistsException("KPIEntry with kpiAssignmentId and timestamp already exists", pe);
             }
             throw new InfrastructureException("Failed to save new kpiEntry", pe);

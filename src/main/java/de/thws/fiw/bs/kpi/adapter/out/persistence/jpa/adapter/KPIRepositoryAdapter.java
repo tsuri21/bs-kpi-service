@@ -68,7 +68,7 @@ public class KPIRepositoryAdapter implements KPIRepository {
             em.persist(mapper.toPersistenceModel(kpi));
             em.flush();
         } catch (PersistenceException ex) {
-            if (ExceptionUtils.isConstraintViolation(ex)) {
+            if (ExceptionUtils.isUniqueConstraintViolation(ex)) {
                 throw new AlreadyExistsException("KPI with name already exists", ex);
             }
             throw new InfrastructureException("Failed to save KPI: " + kpi.getName().value(), ex);
