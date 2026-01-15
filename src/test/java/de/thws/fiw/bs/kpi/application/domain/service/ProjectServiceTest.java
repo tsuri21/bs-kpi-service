@@ -1,11 +1,8 @@
 package de.thws.fiw.bs.kpi.application.domain.service;
 
 import de.thws.fiw.bs.kpi.application.domain.exception.ResourceNotFoundException;
-import de.thws.fiw.bs.kpi.application.domain.model.Name;
 import de.thws.fiw.bs.kpi.application.domain.model.project.Project;
 import de.thws.fiw.bs.kpi.application.domain.model.project.ProjectId;
-import de.thws.fiw.bs.kpi.application.domain.model.project.RepoUrl;
-import de.thws.fiw.bs.kpi.application.port.PageRequest;
 import de.thws.fiw.bs.kpi.application.port.out.ProjectRepository;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;

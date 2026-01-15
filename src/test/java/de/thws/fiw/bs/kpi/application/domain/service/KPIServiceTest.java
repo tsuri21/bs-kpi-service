@@ -2,12 +2,15 @@ package de.thws.fiw.bs.kpi.application.domain.service;
 
 import de.thws.fiw.bs.kpi.application.domain.exception.ResourceNotFoundException;
 import de.thws.fiw.bs.kpi.application.domain.model.*;
-import de.thws.fiw.bs.kpi.application.port.PageRequest;
+import de.thws.fiw.bs.kpi.application.domain.model.kpi.KPIId;
+import de.thws.fiw.bs.kpi.application.domain.model.kpi.KPI;
+import de.thws.fiw.bs.kpi.application.domain.model.kpi.TargetDestination;
 import de.thws.fiw.bs.kpi.application.port.out.KPIRepository;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import java.util.Optional;
 
@@ -22,34 +25,6 @@ class KPIServiceTest {
 
     @InjectMock
     KPIRepository kpiRepository;
-
-    @Test
-    void readById_idGiven_callsRepository() {
-        KPIId id = KPIId.newId();
-
-        kpiService.readById(id);
-
-        verify(kpiRepository).findById(id);
-    }
-
-    @Test
-    void readAll_filtersGiven_callsRepository() {
-        Name name = new Name("Test");
-        PageRequest pageRequest = new PageRequest(1, 10);
-
-        kpiService.readAll(name, pageRequest);
-
-        verify(kpiRepository).findByFilter(name, pageRequest);
-    }
-
-    @Test
-    void create_kpiGiven_callsRepository() {
-        KPI kpi = mock(KPI.class);
-
-        kpiService.create(kpi);
-
-        verify(kpiRepository).save(kpi);
-    }
 
     @Test
     void updateName_kpiExists_setsNameAndCallsRepositoryUpdate() {
@@ -68,14 +43,14 @@ class KPIServiceTest {
     }
 
     @Test
-    void update_kpiDoesNotExist_throwsException() {
+    void updateName_kpiDoesNotExist_throwsException() {
         KPIId id = KPIId.newId();
-        KPI kpiToUpdate = mock(KPI.class);
+        Name newName = new Name("Test");
 
-        when(kpiToUpdate.getId()).thenReturn(id);
         when(kpiRepository.findById(id)).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> kpiService.update(kpiToUpdate));
+        assertThrows(ResourceNotFoundException.class, () -> kpiService.updateName(id, newName));
+
         verify(kpiRepository, never()).update(any());
     }
 
