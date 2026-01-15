@@ -47,7 +47,7 @@ class KPIAssignmentRepositoryAdapterTest {
     private final ProjectId defaultPId3 = ProjectId.newId();
 
     private Thresholds createThresholds() {
-        return Thresholds.forDestination(TargetDestination.DECREASING, 10.0, 20.0, 30.0);
+        return Thresholds.linear(TargetDestination.DECREASING, 10.0, 20.0);
     }
 
     private void createKpi(KPI kpi) {
@@ -151,9 +151,9 @@ class KPIAssignmentRepositoryAdapterTest {
         createDefaultAssignments();
 
         KPIId unknownKPI = KPIId.newId();
-        ProjectId unkownProject = ProjectId.newId();
+        ProjectId unknownProject = ProjectId.newId();
 
-        Page<KPIAssignment> result = adapter.findByFilter(unknownKPI, unkownProject, defaultPage);
+        Page<KPIAssignment> result = adapter.findByFilter(unknownKPI, unknownProject, defaultPage);
 
         assertTrue(result.content().isEmpty());
         assertEquals(0, result.totalElements());
@@ -224,14 +224,13 @@ class KPIAssignmentRepositoryAdapterTest {
 
         adapter.save(new KPIAssignment(id, createThresholds(), kpi, project));
 
-        Thresholds newThresholds = Thresholds.forDestination(TargetDestination.DECREASING, 79, 89, 99);
+        Thresholds newThresholds = Thresholds.linear(TargetDestination.DECREASING, 79, 89);
         adapter.update(new KPIAssignment(id, newThresholds, kpi, project));
 
         Optional<KPIAssignment> result = adapter.findById(id);
         assertTrue(result.isPresent());
         assertEquals(79.0, result.get().getThresholds().getGreen());
         assertEquals(89.0, result.get().getThresholds().getYellow());
-        assertEquals(99.0, result.get().getThresholds().getRed());
     }
 
     @Test

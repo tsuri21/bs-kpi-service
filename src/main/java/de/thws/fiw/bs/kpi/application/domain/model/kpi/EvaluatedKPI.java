@@ -36,10 +36,10 @@ public class EvaluatedKPI extends KPI {
                 else status = Status.RED;
             }
             case RANGE -> {
-                if (value < threshold.getGreen() + threshold.getGreen() * threshold.getYellow() &&
-                        value > threshold.getGreen() - threshold.getGreen() * threshold.getYellow()) status = Status.GREEN;
-                else if (value < threshold.getGreen() + threshold.getGreen() * threshold.getRed() &&
-                        value > threshold.getGreen() - threshold.getGreen() * threshold.getRed()) status = Status.YELLOW;
+                if (value < threshold.getTargetValue() + threshold.getTargetValue() * threshold.getGreen() &&
+                        value > threshold.getTargetValue() - threshold.getTargetValue() * threshold.getGreen()) status = Status.GREEN;
+                else if (value < threshold.getTargetValue() + threshold.getTargetValue() * threshold.getYellow() &&
+                        value > threshold.getTargetValue() - threshold.getTargetValue() * threshold.getYellow()) status = Status.YELLOW;
                 else status = Status.RED;
             }
             default -> status = Status.RED;

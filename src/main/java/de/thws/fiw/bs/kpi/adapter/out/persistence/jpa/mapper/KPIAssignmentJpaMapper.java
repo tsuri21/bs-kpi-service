@@ -3,6 +3,7 @@ package de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.mapper;
 import de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.entity.KPIAssignmentEntity;
 import de.thws.fiw.bs.kpi.application.domain.model.*;
 
+import de.thws.fiw.bs.kpi.application.domain.model.kpi.TargetDestination;
 import de.thws.fiw.bs.kpi.application.domain.model.kpiAssignment.KPIAssignment;
 import de.thws.fiw.bs.kpi.application.domain.model.kpiAssignment.KPIAssignmentId;
 import de.thws.fiw.bs.kpi.application.domain.model.project.ProjectId;
@@ -21,7 +22,7 @@ public class KPIAssignmentJpaMapper implements PersistenceMapper<KPIAssignment, 
                 kpiAssignment.getId().value(),
                 kpiAssignment.getThresholds().getGreen(),
                 kpiAssignment.getThresholds().getYellow(),
-                kpiAssignment.getThresholds().getRed(),
+                kpiAssignment.getThresholds().getTargetValue(),
                 mapper.toPersistenceModel(kpiAssignment.getKpi()),
                 kpiAssignment.getProjectId().value()
         );
@@ -29,9 +30,18 @@ public class KPIAssignmentJpaMapper implements PersistenceMapper<KPIAssignment, 
 
     @Override
     public KPIAssignment toDomainModel(KPIAssignmentEntity kpiAssignmentEntity) {
+        Thresholds thresholds;
+        TargetDestination dest = kpiAssignmentEntity.getKpiEntity().getDestination();
+
+        if (dest == TargetDestination.RANGE) {
+            thresholds = Thresholds.range(kpiAssignmentEntity.getTargetValue(), kpiAssignmentEntity.getGreen(), kpiAssignmentEntity.getYellow());
+        } else {
+            thresholds = Thresholds.linear(dest, kpiAssignmentEntity.getGreen(), kpiAssignmentEntity.getYellow());
+        }
+
         return new KPIAssignment(
                 new KPIAssignmentId(kpiAssignmentEntity.getId()),
-                Thresholds.forDestination(kpiAssignmentEntity.getKpiEntity().getDestination(), kpiAssignmentEntity.getGreen(), kpiAssignmentEntity.getYellow(), kpiAssignmentEntity.getRed()),
+                thresholds,
                 mapper.toDomainModel(kpiAssignmentEntity.getKpiEntity()),
                 new ProjectId(kpiAssignmentEntity.getProjectId())
         );

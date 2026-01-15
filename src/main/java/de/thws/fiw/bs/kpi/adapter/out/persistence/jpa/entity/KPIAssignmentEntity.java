@@ -19,8 +19,8 @@ public class KPIAssignmentEntity {
     @Column(nullable = false)
     private double yellow;
 
-    @Column(nullable = false)
-    private double red;
+    @Column
+    private Double targetValue;
 
     @ManyToOne
     @JoinColumn(name = "kpi_id", nullable = false)
@@ -29,19 +29,17 @@ public class KPIAssignmentEntity {
     @Column(name = "project_id", nullable = false)
     private UUID projectId;
 
-
     public KPIAssignmentEntity() {
     }
 
-    public KPIAssignmentEntity(UUID id, double green, double yellow, double red, KPIEntity kpi, UUID projectId) {
+    public KPIAssignmentEntity(UUID id, double green, double yellow, Double targetValue, KPIEntity kpi, UUID projectId) {
         this.id = id;
         this.green = green;
         this.yellow = yellow;
-        this.red = red;
+        this.targetValue = targetValue;
         this.kpiEntity = kpi;
         this.projectId = projectId;
     }
-
 
     public UUID getId() {
         return id;
@@ -67,23 +65,13 @@ public class KPIAssignmentEntity {
         this.yellow = yellow;
     }
 
-    public double getRed() {
-        return red;
+    public Double getTargetValue() {
+        return targetValue;
     }
 
-    public void setRed(double red) {
-        this.red = red;
+    public void setTargetValue(Double targetValue) {
+        this.targetValue = targetValue;
     }
-
-
-    public UUID getProjectId() {
-        return projectId;
-    }
-
-    public void setProjectId(UUID projectId) {
-        this.projectId = projectId;
-    }
-
 
     public KPIEntity getKpiEntity() {
         return kpiEntity;
@@ -93,4 +81,11 @@ public class KPIAssignmentEntity {
         this.kpiEntity = kpiEntity;
     }
 
+    public UUID getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(UUID projectId) {
+        this.projectId = projectId;
+    }
 }

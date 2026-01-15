@@ -4,6 +4,7 @@ import de.thws.fiw.bs.kpi.application.domain.exception.ResourceNotFoundException
 import de.thws.fiw.bs.kpi.application.domain.model.*;
 import de.thws.fiw.bs.kpi.application.domain.model.kpi.KPI;
 import de.thws.fiw.bs.kpi.application.domain.model.kpi.KPIId;
+import de.thws.fiw.bs.kpi.application.domain.model.kpi.TargetDestination;
 import de.thws.fiw.bs.kpi.application.domain.model.kpiAssignment.KPIAssignment;
 import de.thws.fiw.bs.kpi.application.domain.model.kpiAssignment.KPIAssignmentId;
 import de.thws.fiw.bs.kpi.application.domain.model.project.ProjectId;
@@ -72,12 +73,22 @@ public class KPIAssignmentService implements KPIAssignmentUseCase {
         KPI kpi = kpiRepository.findById(kpiId).orElseThrow(() -> new ResourceNotFoundException("KPI", kpiId));
         projectRepository.findById(projectId).orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
 
-        Thresholds thresholds = Thresholds.forDestination(
-                kpi.getDestination(),
-                kpiAssignmentCmd.green(),
-                kpiAssignmentCmd.yellow(),
-                kpiAssignmentCmd.red()
-        );
+        Thresholds thresholds;
+        TargetDestination dest = kpi.getDestination();
+
+        if (dest == TargetDestination.RANGE) {
+            thresholds = Thresholds.range(
+                    kpiAssignmentCmd.targetValue(),
+                    kpiAssignmentCmd.green(),
+                    kpiAssignmentCmd.yellow()
+            );
+        } else {
+            thresholds = Thresholds.linear(
+                    kpi.getDestination(),
+                    kpiAssignmentCmd.green(),
+                    kpiAssignmentCmd.yellow()
+            );
+        }
 
         return new KPIAssignment(
                 kpiAssignmentCmd.id(),

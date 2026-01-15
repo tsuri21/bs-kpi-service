@@ -15,7 +15,7 @@ class KPIAssignmentTest {
     @Test
     void init_anyArgumentNull_throwsException() {
         KPIAssignmentId id = KPIAssignmentId.newId();
-        Thresholds thresholds = Thresholds.forDestination(TargetDestination.INCREASING, 50, 30, 15);
+        Thresholds thresholds = Thresholds.linear(TargetDestination.INCREASING, 50, 30);
         KPI kpi = new KPI(KPIId.newId(), new Name("Test"), TargetDestination.DECREASING);
         ProjectId projectId = ProjectId.newId();
 

@@ -88,7 +88,6 @@ class KPIAssignmentServiceTest {
         assertNotNull(saved.getThresholds());
         assertEquals(3.0, saved.getThresholds().getGreen());
         assertEquals(2.0, saved.getThresholds().getYellow());
-        assertEquals(1.0, saved.getThresholds().getRed());
     }
 
     @Test
@@ -133,7 +132,7 @@ class KPIAssignmentServiceTest {
         KPIAssignmentCommand cmd = createKpiAssignmentCmdMock(assignmentId, kpiId, projectId);
 
         KPI kpi = mock(KPI.class);
-        when(kpi.getDestination()).thenReturn(TargetDestination.INCREASING);
+        when(kpi.getDestination()).thenReturn(TargetDestination.INCREASING); // TODO: change to RANGE so that the else path is also tested
         when(kpiRepository.findById(kpiId)).thenReturn(Optional.of(kpi));
 
         Project project = mock(Project.class);
@@ -156,7 +155,6 @@ class KPIAssignmentServiceTest {
         assertNotNull(updated.getThresholds());
         assertEquals(3.0, updated.getThresholds().getGreen());
         assertEquals(2.0, updated.getThresholds().getYellow());
-        assertEquals(1.0, updated.getThresholds().getRed());
     }
 
     @Test
@@ -244,7 +242,6 @@ class KPIAssignmentServiceTest {
         when(cmd.projectId()).thenReturn(projectId);
         when(cmd.green()).thenReturn(3.0);
         when(cmd.yellow()).thenReturn(2.0);
-        when(cmd.red()).thenReturn(1.0);
         return cmd;
     }
 }

@@ -24,15 +24,15 @@ class EvaluatedKPITest {
     }
 
     private Thresholds createThresholdsForIncreasing() {
-        return Thresholds.forDestination(TargetDestination.INCREASING, 3.0, 2.0, 1.0);
+        return Thresholds.linear(TargetDestination.INCREASING, 3.0, 2.0);
     }
 
     private Thresholds createThresholdsForDecreasing() {
-        return Thresholds.forDestination(TargetDestination.DECREASING, 1.0, 2.0, 3.0);
+        return Thresholds.linear(TargetDestination.DECREASING, 1.0, 2.0);
     }
 
     private Thresholds createThresholdsForRange() {
-        return Thresholds.forDestination(TargetDestination.RANGE, 10.0, 1.2, 1.5);
+        return Thresholds.range(10.0, 1.2, 1.5);
     }
 
     @Test
