@@ -16,6 +16,10 @@ public class EvaluatedKPI extends KPI {
     }
 
     public static EvaluatedKPI evaluateKPI(KPI kpi, Thresholds threshold, KPIEntry latestEntry) {
+        Objects.requireNonNull(kpi, "KPI must not be null");
+        Objects.requireNonNull(threshold, "Thresholds must not be null");
+        Objects.requireNonNull(latestEntry, "KPIEntry must not be null");
+
         double value = latestEntry.getValue();
         TargetDestination destination = kpi.getDestination();
         Status status;
@@ -32,8 +36,10 @@ public class EvaluatedKPI extends KPI {
                 else status = Status.RED;
             }
             case RANGE -> {
-                if (value < threshold.getGreen() * threshold.getYellow()) status = Status.GREEN;
-                else if (value < threshold.getGreen() * threshold.getRed()) status = Status.YELLOW;
+                if (value < threshold.getGreen() + threshold.getGreen() * threshold.getYellow() &&
+                        value > threshold.getGreen() - threshold.getGreen() * threshold.getYellow()) status = Status.GREEN;
+                else if (value < threshold.getGreen() + threshold.getGreen() * threshold.getRed() &&
+                        value > threshold.getGreen() - threshold.getGreen() * threshold.getRed()) status = Status.YELLOW;
                 else status = Status.RED;
             }
             default -> status = Status.RED;
