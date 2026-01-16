@@ -12,7 +12,7 @@ public record KPIAssignmentCommand(
         ProjectId projectId,
         double green,
         double yellow,
-        double red
+        Double targetValue
 ) {
     public KPIAssignmentCommand {
         Objects.requireNonNull(id, "KPIAssignment id must not be null");
