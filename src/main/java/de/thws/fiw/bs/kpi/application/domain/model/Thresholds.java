@@ -77,7 +77,7 @@ public final class Thresholds {
 
     private Status calculateRange(double value) {
         if (targetValue == null) {
-            throw new IllegalStateException("Target value must be present for RANGE calculation");
+            throw new IllegalArgumentException("Target value must be present for RANGE calculation");
         }
 
         double deviation = Math.abs(value - targetValue);

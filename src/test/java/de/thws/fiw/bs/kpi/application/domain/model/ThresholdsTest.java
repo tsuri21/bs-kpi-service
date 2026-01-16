@@ -107,43 +107,43 @@ class ThresholdsTest {
     }
 
     @Test
-    void calculateStatus_increasing_valueAboveGreenLimit_returnsGreen() {
+    void calculateStatus_increasingValueAboveGreenLimit_returnsGreen() {
         Thresholds t = createIncreasing();
         assertEquals(Status.GREEN, t.calculateStatus(4.0, TargetDestination.INCREASING));
     }
 
     @Test
-    void calculateStatus_increasing_valueBetweenLimits_returnsYellow() {
+    void calculateStatus_increasingValueBetweenLimits_returnsYellow() {
         Thresholds t = createIncreasing();
         assertEquals(Status.YELLOW, t.calculateStatus(2.5, TargetDestination.INCREASING));
     }
 
     @Test
-    void calculateStatus_increasing_valueBelowYellowLimit_returnsRed() {
+    void calculateStatus_increasingValueBelowYellowLimit_returnsRed() {
         Thresholds t = createIncreasing();
         assertEquals(Status.RED, t.calculateStatus(1.5, TargetDestination.INCREASING));
     }
 
     @Test
-    void calculateStatus_decreasing_valueBelowGreenLimit_returnsGreen() {
+    void calculateStatus_decreasingValueBelowGreenLimit_returnsGreen() {
         Thresholds t = createDecreasing();
         assertEquals(Status.GREEN, t.calculateStatus(0.5, TargetDestination.DECREASING));
     }
 
     @Test
-    void calculateStatus_decreasing_valueBetweenLimits_returnsYellow() {
+    void calculateStatus_decreasingValueBetweenLimits_returnsYellow() {
         Thresholds t = createDecreasing();
         assertEquals(Status.YELLOW, t.calculateStatus(1.5, TargetDestination.DECREASING));
     }
 
     @Test
-    void calculateStatus_decreasing_valueAboveYellowLimit_returnsRed() {
+    void calculateStatus_decreasingValueAboveYellowLimit_returnsRed() {
         Thresholds t = createDecreasing();
         assertEquals(Status.RED, t.calculateStatus(2.5, TargetDestination.DECREASING));
     }
 
     @Test
-    void calculateStatus_range_withinGreenTolerance_returnsGreen() {
+    void calculateStatus_rangeWithinGreenTolerance_returnsGreen() {
         Thresholds t = createRange();
 
         assertEquals(Status.GREEN, t.calculateStatus(11.0, TargetDestination.RANGE));
@@ -151,22 +151,29 @@ class ThresholdsTest {
     }
 
     @Test
-    void calculateStatus_range_outsideGreenButWithinYellow_returnsYellow() {
+    void calculateStatus_rangeWithinGreenToleranceNegativeRange_returnsGreen() {
+        Thresholds t = Thresholds.range(5.0, 10, 20);
+
+        assertEquals(Status.YELLOW, t.calculateStatus(-7, TargetDestination.RANGE));
+    }
+
+    @Test
+    void calculateStatus_rangeOutsideGreenButWithinYellow_returnsYellow() {
         Thresholds t = createRange();
         assertEquals(Status.YELLOW, t.calculateStatus(11.4, TargetDestination.RANGE));
     }
 
     @Test
-    void calculateStatus_range_outsideYellowTolerance_returnsRed() {
+    void calculateStatus_rangeOutsideYellowTolerance_returnsRed() {
         Thresholds t = createRange();
         assertEquals(Status.RED, t.calculateStatus(11.6, TargetDestination.RANGE));
     }
 
     @Test
-    void calculateStatus_range_calledWithLinearThresholds_throwsException() {
+    void calculateStatus_rangeCalledWithLinearThresholds_throwsException() {
         Thresholds linear = createIncreasing();
         assertThrows(
-                IllegalStateException.class,
+                IllegalArgumentException.class,
                 () -> linear.calculateStatus(5.0, TargetDestination.RANGE)
         );
     }
