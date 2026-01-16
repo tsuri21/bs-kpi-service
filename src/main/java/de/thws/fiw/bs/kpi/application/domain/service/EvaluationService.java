@@ -1,6 +1,7 @@
 package de.thws.fiw.bs.kpi.application.domain.service;
 
 import de.thws.fiw.bs.kpi.application.domain.exception.EvaluationException;
+import de.thws.fiw.bs.kpi.application.domain.exception.ResourceNotFoundException;
 import de.thws.fiw.bs.kpi.application.domain.model.kpi.KPIEvaluationResult;
 import de.thws.fiw.bs.kpi.application.domain.model.kpiAssignment.KPIAssignment;
 import de.thws.fiw.bs.kpi.application.domain.model.kpiAssignment.KPIAssignmentId;
@@ -36,7 +37,7 @@ public class EvaluationService implements EvaluationUseCase {
     @Override
     public KPIEvaluationResult evaluateKPI(KPIAssignmentId id) {
         KPIAssignment kpiAssignment = kpiAssignmentRepository.findById(id)
-                .orElseThrow(() -> new EvaluationException("KPIAssignment could not be found"));
+                .orElseThrow(() -> new ResourceNotFoundException("KPIAssignment", id));
 
         KPIEntry kpiEntry = kpiEntryRepository.findLatest(id)
                 .orElseThrow(() -> new EvaluationException("KPI has no entries"));
@@ -47,9 +48,13 @@ public class EvaluationService implements EvaluationUseCase {
     @Override
     public ProjectEvaluationResult evaluateProject(ProjectId id) {
         Project project = projectRepository.findById(id)
-                .orElseThrow(() -> new EvaluationException("Project could not be found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Project", id));
 
-        Page<KPIAssignment> kpiAssignmentsPage = kpiAssignmentRepository.findByFilter(null, id, new PageRequest(0, 100));
+        Page<KPIAssignment> kpiAssignmentsPage = kpiAssignmentRepository.findByFilter(null, id, new PageRequest(1, 1000));
+        if (kpiAssignmentsPage.hasNext()) {
+            throw new EvaluationException("Project evaluation is not possible for projects that have more then 1000 assignments");
+        }
+
         List<KPIAssignment> kpiAssignments = kpiAssignmentsPage.content();
         if (kpiAssignments.isEmpty()) {
             throw new EvaluationException("Project has no KPI assignments");
@@ -62,7 +67,7 @@ public class EvaluationService implements EvaluationUseCase {
             KPIEntry entry = latestEntries.get(assignment.getId());
 
             // TODO: discuss if in this case the assignment should be skipped or an exception should be thrown
-            //  -> I thought this was specified in out project specification but is is not
+            //  -> I thought this was specified in our project specification but is is not
             if (entry == null) {
                 throw new EvaluationException("KPI Assignment " + assignment.getId() + " has no entries");
             }
