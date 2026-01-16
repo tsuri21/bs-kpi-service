@@ -62,17 +62,22 @@ public class EvaluationService implements EvaluationUseCase {
 
         Map<KPIAssignmentId, KPIEntry> latestEntries = kpiEntryRepository.findLatestEntriesByProject(id);
         List<KPIEvaluationResult> results = new ArrayList<>();
+        int amountOfAssignments = 0;
 
         for (KPIAssignment assignment : kpiAssignments) {
             KPIEntry entry = latestEntries.get(assignment.getId());
 
-            // TODO: discuss if in this case the assignment should be skipped or an exception should be thrown
-            //  -> I thought this was specified in our project specification but is is not
             if (entry == null) {
-                throw new EvaluationException("KPI Assignment " + assignment.getId() + " has no entries");
+                continue;
             }
             results.add(KPIEvaluationResult.evaluate(assignment, entry));
+            amountOfAssignments++;
         }
+
+        if (amountOfAssignments == 0) {
+            throw new EvaluationException("Project has no entries");
+        }
+
         return ProjectEvaluationResult.aggregate(project, results);
     }
 }
