@@ -50,10 +50,10 @@ public class KPIAssignmentService implements KPIAssignmentUseCase {
 
     @Override
     public void update(KPIAssignmentCommand kpiAssignmentCmd) {
-        KPIAssignment assignment = createKPIAssignment(kpiAssignmentCmd);
+        kpiAssignmentRepository.findById(kpiAssignmentCmd.id())
+                .orElseThrow(() -> new ResourceNotFoundException("KPIAssignment", kpiAssignmentCmd.id()));
 
-        kpiAssignmentRepository.findById(assignment.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("KPIAssignment", assignment.getId()));
+        KPIAssignment assignment = createKPIAssignment(kpiAssignmentCmd);
 
         kpiAssignmentRepository.update(assignment);
     }
