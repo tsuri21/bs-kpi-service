@@ -101,14 +101,6 @@ class ThresholdsTest {
     }
 
     @Test
-    void range_targetValueZero_throwsException() {
-        assertThrows(
-                IllegalArgumentException.class,
-                () -> Thresholds.range(0.0, 1.5, 2.4)
-        );
-    }
-
-    @Test
     void calculateStatus_destinationNull_throwsException() {
         Thresholds t = createIncreasing();
         assertThrows(NullPointerException.class, () -> t.calculateStatus(5.0, null));

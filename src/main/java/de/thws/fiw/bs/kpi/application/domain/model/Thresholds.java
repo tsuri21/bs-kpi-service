@@ -42,10 +42,6 @@ public final class Thresholds {
     }
 
     public static Thresholds range(double targetValue, double green, double yellow) {
-        if (Math.abs(targetValue) < 0.00001) {
-            throw new IllegalArgumentException("Target value must not be zero");
-        }
-
         if (green <= 0 || yellow <= 0) {
             throw new IllegalArgumentException("Tolerances must be positive");
         }
