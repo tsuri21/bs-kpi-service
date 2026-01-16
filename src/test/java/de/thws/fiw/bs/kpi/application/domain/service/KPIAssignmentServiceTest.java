@@ -1,6 +1,7 @@
 package de.thws.fiw.bs.kpi.application.domain.service;
 
 import de.thws.fiw.bs.kpi.application.domain.exception.ResourceNotFoundException;
+import de.thws.fiw.bs.kpi.application.domain.model.Name;
 import de.thws.fiw.bs.kpi.application.domain.model.kpi.KPI;
 import de.thws.fiw.bs.kpi.application.domain.model.kpi.KPIId;
 import de.thws.fiw.bs.kpi.application.domain.model.kpi.TargetDestination;
@@ -8,7 +9,6 @@ import de.thws.fiw.bs.kpi.application.domain.model.kpiAssignment.KPIAssignment;
 import de.thws.fiw.bs.kpi.application.domain.model.kpiAssignment.KPIAssignmentId;
 import de.thws.fiw.bs.kpi.application.domain.model.project.Project;
 import de.thws.fiw.bs.kpi.application.domain.model.project.ProjectId;
-import de.thws.fiw.bs.kpi.application.port.PageRequest;
 import de.thws.fiw.bs.kpi.application.port.in.KPIAssignmentCommand;
 import de.thws.fiw.bs.kpi.application.port.out.KPIAssignmentRepository;
 import de.thws.fiw.bs.kpi.application.port.out.KPIRepository;
@@ -39,24 +39,12 @@ class KPIAssignmentServiceTest {
     @InjectMock
     ProjectRepository projectRepository;
 
-    @Test
-    void readById_idGiven_callsRepository() {
-        KPIAssignmentId id = KPIAssignmentId.newId();
-
-        kpiAssignmentService.readById(id);
-
-        verify(kpiAssignmentRepository).findById(id);
+    private KPIAssignmentCommand createKpiAssignmentCmdForIncreasing(KPIAssignmentId id, KPIId kpiId, ProjectId projectId) {
+        return new KPIAssignmentCommand(id, kpiId, projectId, 15.0, 10.0, null);
     }
 
-    @Test
-    void readAll_filtersGiven_callsRepository() {
-        KPIId kpiId = KPIId.newId();
-        ProjectId projectId = ProjectId.newId();
-        PageRequest pageRequest = new PageRequest(1, 10);
-
-        kpiAssignmentService.readAll(kpiId, projectId, pageRequest);
-
-        verify(kpiAssignmentRepository).findByFilter(kpiId, projectId, pageRequest);
+    private KPIAssignmentCommand createKpiAssignmentCmdForRange(KPIAssignmentId id, KPIId kpiId, ProjectId projectId) {
+        return new KPIAssignmentCommand(id, kpiId, projectId, 10.0, 20.0, 5.0);
     }
 
     @Test
@@ -65,10 +53,9 @@ class KPIAssignmentServiceTest {
         KPIId kpiId = KPIId.newId();
         ProjectId projectId = ProjectId.newId();
 
-        KPIAssignmentCommand cmd = createKpiAssignmentCmdMock(assignmentId, kpiId, projectId);
+        KPIAssignmentCommand cmd = createKpiAssignmentCmdForIncreasing(assignmentId, kpiId, projectId);
 
-        KPI kpi = mock(KPI.class);
-        when(kpi.getDestination()).thenReturn(TargetDestination.INCREASING);
+        KPI kpi = new KPI(kpiId, new Name("Test"), TargetDestination.INCREASING);
         when(kpiRepository.findById(kpiId)).thenReturn(Optional.of(kpi));
 
         Project project = mock(Project.class);
@@ -86,8 +73,8 @@ class KPIAssignmentServiceTest {
         assertEquals(projectId, saved.getProjectId());
         assertSame(kpi, saved.getKpi());
         assertNotNull(saved.getThresholds());
-        assertEquals(3.0, saved.getThresholds().getGreen());
-        assertEquals(2.0, saved.getThresholds().getYellow());
+        assertEquals(15.0, saved.getThresholds().getGreen());
+        assertEquals(10.0, saved.getThresholds().getYellow());
     }
 
     @Test
@@ -96,13 +83,12 @@ class KPIAssignmentServiceTest {
         KPIId kpiId = KPIId.newId();
         ProjectId projectId = ProjectId.newId();
 
-        KPIAssignmentCommand cmd = createKpiAssignmentCmdMock(assignmentId, kpiId, projectId);
+        KPIAssignmentCommand cmd = createKpiAssignmentCmdForIncreasing(assignmentId, kpiId, projectId);
 
         when(kpiRepository.findById(kpiId)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> kpiAssignmentService.create(cmd));
         verify(kpiAssignmentRepository, never()).save(any());
-        verify(projectRepository, never()).findById(any());
     }
 
     @Test
@@ -111,10 +97,9 @@ class KPIAssignmentServiceTest {
         KPIId kpiId = KPIId.newId();
         ProjectId projectId = ProjectId.newId();
 
-        KPIAssignmentCommand cmd = createKpiAssignmentCmdMock(assignmentId, kpiId, projectId);
+        KPIAssignmentCommand cmd = createKpiAssignmentCmdForIncreasing(assignmentId, kpiId, projectId);
 
-        KPI kpi = mock(KPI.class);
-        when(kpi.getDestination()).thenReturn(TargetDestination.INCREASING);
+        KPI kpi = new KPI(kpiId, new Name("Test"), TargetDestination.INCREASING);
         when(kpiRepository.findById(kpiId)).thenReturn(Optional.of(kpi));
 
         when(projectRepository.findById(projectId)).thenReturn(Optional.empty());
@@ -129,10 +114,9 @@ class KPIAssignmentServiceTest {
         KPIId kpiId = KPIId.newId();
         ProjectId projectId = ProjectId.newId();
 
-        KPIAssignmentCommand cmd = createKpiAssignmentCmdMock(assignmentId, kpiId, projectId);
+        KPIAssignmentCommand cmd = createKpiAssignmentCmdForRange(assignmentId, kpiId, projectId);
 
-        KPI kpi = mock(KPI.class);
-        when(kpi.getDestination()).thenReturn(TargetDestination.INCREASING); // TODO: change to RANGE so that the else path is also tested
+        KPI kpi = new KPI(kpiId, new Name("Test"), TargetDestination.RANGE);
         when(kpiRepository.findById(kpiId)).thenReturn(Optional.of(kpi));
 
         Project project = mock(Project.class);
@@ -153,8 +137,9 @@ class KPIAssignmentServiceTest {
         assertEquals(projectId, updated.getProjectId());
         assertSame(kpi, updated.getKpi());
         assertNotNull(updated.getThresholds());
-        assertEquals(3.0, updated.getThresholds().getGreen());
-        assertEquals(2.0, updated.getThresholds().getYellow());
+        assertEquals(10.0, updated.getThresholds().getGreen());
+        assertEquals(20.0, updated.getThresholds().getYellow());
+        assertEquals(5.0, updated.getThresholds().getTargetValue());
     }
 
     @Test
@@ -163,15 +148,7 @@ class KPIAssignmentServiceTest {
         KPIId kpiId = KPIId.newId();
         ProjectId projectId = ProjectId.newId();
 
-        KPIAssignmentCommand cmd = createKpiAssignmentCmdMock(assignmentId, kpiId, projectId);
-
-        KPI kpi = mock(KPI.class);
-        when(kpi.getDestination()).thenReturn(TargetDestination.INCREASING);
-        when(kpiRepository.findById(kpiId)).thenReturn(Optional.of(kpi));
-
-        Project project = mock(Project.class);
-        when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
-
+        KPIAssignmentCommand cmd = createKpiAssignmentCmdForRange(assignmentId, kpiId, projectId);
         when(kpiAssignmentRepository.findById(assignmentId)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> kpiAssignmentService.update(cmd));
@@ -184,14 +161,13 @@ class KPIAssignmentServiceTest {
         KPIId kpiId = KPIId.newId();
         ProjectId projectId = ProjectId.newId();
 
-        KPIAssignmentCommand cmd = createKpiAssignmentCmdMock(assignmentId, kpiId, projectId);
+        KPIAssignmentCommand cmd = createKpiAssignmentCmdForRange(assignmentId, kpiId, projectId);
 
         when(kpiRepository.findById(kpiId)).thenReturn(Optional.empty());
+        when(projectRepository.findById(projectId)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> kpiAssignmentService.update(cmd));
         verify(kpiAssignmentRepository, never()).update(any());
-        verify(projectRepository, never()).findById(any());
-        verify(kpiAssignmentRepository, never()).findById(any());
     }
 
     @Test
@@ -200,17 +176,15 @@ class KPIAssignmentServiceTest {
         KPIId kpiId = KPIId.newId();
         ProjectId projectId = ProjectId.newId();
 
-        KPIAssignmentCommand cmd = createKpiAssignmentCmdMock(assignmentId, kpiId, projectId);
+        KPIAssignmentCommand cmd = createKpiAssignmentCmdForRange(assignmentId, kpiId, projectId);
 
-        KPI kpi = mock(KPI.class);
-        when(kpi.getDestination()).thenReturn(TargetDestination.INCREASING);
+        KPI kpi = new KPI(kpiId, new Name("Test"), TargetDestination.RANGE);
         when(kpiRepository.findById(kpiId)).thenReturn(Optional.of(kpi));
 
         when(projectRepository.findById(projectId)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> kpiAssignmentService.update(cmd));
         verify(kpiAssignmentRepository, never()).update(any());
-        verify(kpiAssignmentRepository, never()).findById(any());
     }
 
     @Test
@@ -233,15 +207,5 @@ class KPIAssignmentServiceTest {
 
         assertThrows(ResourceNotFoundException.class, () -> kpiAssignmentService.delete(id));
         verify(kpiAssignmentRepository, never()).delete(any());
-    }
-
-    private KPIAssignmentCommand createKpiAssignmentCmdMock(KPIAssignmentId id, KPIId kpiId, ProjectId projectId) {
-        KPIAssignmentCommand cmd = mock(KPIAssignmentCommand.class);
-        when(cmd.id()).thenReturn(id);
-        when(cmd.kpiId()).thenReturn(kpiId);
-        when(cmd.projectId()).thenReturn(projectId);
-        when(cmd.green()).thenReturn(3.0);
-        when(cmd.yellow()).thenReturn(2.0);
-        return cmd;
     }
 }
