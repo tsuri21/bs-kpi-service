@@ -16,10 +16,12 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.ws.rs.*;
+import jakarta.ws.rs.container.ResourceContext;
 import jakarta.ws.rs.core.*;
 import org.jboss.resteasy.annotations.cache.Cache;
 import org.jboss.resteasy.annotations.cache.NoCache;
 
+import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
@@ -35,11 +37,22 @@ public class ProjectResource {
     @Inject
     HypermediaLinkService linkService;
 
+    @Context
+    ResourceContext resourceContext;
+
+    @Inject
+    UriInfo uriInfo;
+
+    @Path("{pId}/assignments")
+    public KPIAssignmentResource getAssignmentResource() {
+        return resourceContext.getResource(KPIAssignmentResource.class);
+    }
+
     @GET
     @Path("{id}")
     @Cache(maxAge = 60, isPrivate = true)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getById (@NotNull @PathParam("id") UUID id) {
+    public Response getById(@NotNull @PathParam("id") UUID id) {
         ProjectId projectId = new ProjectId(id);
         Project project = projectUseCase.readById(projectId).orElseThrow(NotFoundException::new);
         ProjectDTO projectDTO = mapper.toApiModel(project);
@@ -48,11 +61,15 @@ public class ProjectResource {
         Link self = linkService.buildSelfLink(id);
         Link delete = linkService.buildDeleteLink(id);
         Link update = linkService.buildUpdateLink(id);
+        URI selfUri = uriInfo.getAbsolutePath();
+        URI assignments = UriBuilder.fromUri(selfUri).path("assignments/1").build();
+        String allAssignments = linkService.buildCollectionLinkSub(assignments, KPIAssignmentResource.class, "kpiId");
         String allProjects = linkService.buildCollectionLink("name", "repoUrl");
 
         return Response.ok(projectDTO)
                 .links(self, delete, update)
                 .header("Link", allProjects)
+                .header("Link", allAssignments)
                 .build();
     }
 
