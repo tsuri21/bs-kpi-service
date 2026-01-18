@@ -74,7 +74,7 @@ public class HypermediaLinkService {
         return linkBuilder.toString();
     }
 
-    public String buildCollectionLink(String ...queryParams) {
+    public String buildCollectionLink(String... queryParams) {
         return buildCollectionLink(resourceInfo.getResourceClass(), queryParams);
     }
 
@@ -161,6 +161,149 @@ public class HypermediaLinkService {
 
     public void setSelfLinks(List<? extends AbstractDTO> dtos) {
         dtos.forEach(this::setSelfLink);
+    }
+
+    public void setSelfLink(AbstractDTO dto, Class<?> pathClass) {
+        String href = uriInfo.getBaseUriBuilder()
+                .path(pathClass)
+                .path(dto.getId().toString())
+                .build()
+                .toString();
+
+        dto.setSelfLink(new SelfLink(href, "self", getMediaType(), "GET"));
+    }
+
+    public void setSelfLinks(List<? extends AbstractDTO> dtos, Class<?> pathClass) {
+        dtos.forEach(t -> setSelfLink(t, pathClass));
+    }
+
+
+    public String buildSelfLinkSubLayerBack(URI selfUri, Class<?> pathClass) {
+        URI layerUp = UriBuilder.fromUri(selfUri)
+                .path("..")
+                .build()
+                .normalize();
+
+        String collectionUriStr = layerUp.toString();
+        if (collectionUriStr.endsWith("/")) {
+            collectionUriStr = collectionUriStr.substring(0, collectionUriStr.length() - 1);
+        }
+
+        String rel = "get" + getRelEntityName(pathClass);
+        String type = getMediaType();
+
+        StringBuilder linkBuilder = new StringBuilder("<").append(collectionUriStr);
+
+        linkBuilder.append(">; ");
+        linkBuilder.append("method=\"GET\"; ");
+        linkBuilder.append("rel=\"").append(rel).append("\"; ");
+        linkBuilder.append("type=\"").append(type).append("\"");
+
+        return linkBuilder.toString();
+    }
+
+    public Link buildSelfLinkSub(URI selfUri) {
+        return Link.fromUri(selfUri)
+                .rel("self")
+                .type(getMediaType())
+                .build();
+    }
+
+    public Link buildSelfLinkSub(URI collectionUri, UUID id) {
+        URI selfUri = UriBuilder.fromUri(collectionUri)
+                .path(id.toString())
+                .build();
+
+        return Link.fromUri(selfUri)
+                .rel("self")
+                .type(getMediaType())
+                .build();
+    }
+
+    public Link buildCreateLinkSub(URI selfUri, Class<?> pathClass) {
+        return Link.fromUri(selfUri)
+                .rel("create" + getRelEntityName(pathClass))
+                .param("method", "POST")
+                .type(getMediaType())
+                .build();
+    }
+
+    public Link buildUpdateLinkSub(URI selfUri, Class<?> pathClass) {
+        return Link.fromUri(selfUri)
+                .rel("update" + getRelEntityName(pathClass))
+                .param("method", "PUT")
+                .type(getMediaType())
+                .build();
+    }
+
+    public Link buildDeleteLinkSub(URI selfUri, Class<?> pathClass) {
+        return Link.fromUri(selfUri)
+                .rel("delete" + getRelEntityName(pathClass))
+                .param("method", "DELETE")
+                .type(getMediaType())
+                .build();
+    }
+
+    public URI buildLocationUriSub(URI selfUri, UUID id) {
+        return UriBuilder.fromUri(selfUri)
+                .path(id.toString())
+                .build();
+    }
+
+    public String buildCollectionLinkSub(URI selfUri, Class<?> pathClass, String... queryParams) {
+        URI collectionUri = UriBuilder.fromUri(selfUri)
+                .path("..")
+                .build()
+                .normalize();
+
+        String collectionUriStr = collectionUri.toString();
+        if (collectionUriStr.endsWith("/")) {
+            collectionUriStr = collectionUriStr.substring(0, collectionUriStr.length() - 1);
+        }
+
+        String rel = "getAll" + getRelEntityName(pathClass) + "Items";
+        String type = getMediaType();
+
+        StringBuilder linkBuilder = new StringBuilder("<").append(collectionUriStr);
+
+        boolean isTemplated = false;
+        if (queryParams != null && queryParams.length > 0) {
+            linkBuilder.append("{?").append(String.join(",", queryParams)).append("}");
+            isTemplated = true;
+        }
+        linkBuilder.append(">; ");
+        linkBuilder.append("method=\"GET\"; ");
+        linkBuilder.append("rel=\"").append(rel).append("\"; ");
+        linkBuilder.append("type=\"").append(type).append("\"");
+
+        if (isTemplated) {
+            linkBuilder.append("; templated=\"true\"");
+        }
+
+        return linkBuilder.toString();
+    }
+
+    public String buildCollectionLinkSub(URI collectionUri, UUID id, Class<?> pathClass, String... queryParams) {
+        URI selfUri = UriBuilder.fromUri(collectionUri).path(id.toString()).build();
+        return buildCollectionLinkSub(selfUri, pathClass, queryParams);
+    }
+
+    public void setSelfLinkSub(AbstractDTO dto, URI baseUri) {
+        UriBuilder builder = UriBuilder.fromUri(baseUri);
+
+        if (!baseUri.toString().contains(dto.getId().toString())) {
+            builder.path(dto.getId().toString());
+        }
+
+        String href = builder.build().toString();
+
+        dto.setSelfLink(new SelfLink(href, "self", getMediaType(), "GET"));
+    }
+
+    public void setSelfLinksSub(List<? extends AbstractDTO> dtos, URI collectionUri) {
+        if (dtos != null && !dtos.isEmpty()) {
+            dtos.forEach(dto -> setSelfLinkSub(dto, collectionUri));
+        }
     }
 
     Link buildCustomLink(Class<?> targetRes, String rel, String method) {
