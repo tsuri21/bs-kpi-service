@@ -41,7 +41,7 @@ public class ProjectRepositoryAdapter implements ProjectRepository {
             ProjectEntity project = em.find(ProjectEntity.class, id.value());
             return Optional.ofNullable(project).map(mapper::toDomainModel);
         } catch (PersistenceException ex) {
-            throw new InfrastructureException("Database access failed for ID: " + id.value(), ex);
+            throw new InfrastructureException("Database access failed for project with ID: " + id.value(), ex);
         }
     }
 

@@ -40,17 +40,17 @@ public class KPIEntryRepositoryAdapter implements KPIEntryRepository {
     EntityManager em;
 
     @Override
-    public Optional<KPIEntry> findById(KPIEntryId id){
-        try{
+    public Optional<KPIEntry> findById(KPIEntryId id) {
+        try {
             KPIEntryEntity kpiEntry = em.find(KPIEntryEntity.class, id.value());
             return Optional.ofNullable(kpiEntry).map(mapper::toDomainModel);
-        } catch (PersistenceException ex){
-            throw new InfrastructureException("Database access failed for ID: " + id.value(), ex);
+        } catch (PersistenceException ex) {
+            throw new InfrastructureException("Database access failed for KPI entry with ID: " + id.value(), ex);
         }
     }
 
     @Override
-    public Optional<KPIEntry> findLatest(KPIAssignmentId id){
+    public Optional<KPIEntry> findLatest(KPIAssignmentId id) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<KPIEntryEntity> cq = cb.createQuery(KPIEntryEntity.class);
         Root<KPIEntryEntity> root = cq.from(KPIEntryEntity.class);
@@ -59,15 +59,14 @@ public class KPIEntryRepositoryAdapter implements KPIEntryRepository {
 
         cq.orderBy(cb.desc(root.get("timestamp")));
 
-        try{
+        try {
             List<KPIEntryEntity> results = em.createQuery(cq)
                     .setMaxResults(1)
                     .getResultList();
 
             return results.stream().map(mapper::toDomainModel).findFirst();
-        }
-        catch (PersistenceException ex){
-            throw new InfrastructureException("Database access failed for AssignmentID: " + id.value(), ex);
+        } catch (PersistenceException ex) {
+            throw new InfrastructureException("Database access failed for KPI assignment ID: " + id.value(), ex);
         }
     }
 
@@ -77,43 +76,47 @@ public class KPIEntryRepositoryAdapter implements KPIEntryRepository {
                 "WHERE e.assignmentId IN (SELECT a.id FROM KPIAssignmentEntity a WHERE a.projectId = :pid) " +
                 "AND e.timestamp = (SELECT MAX(e2.timestamp) FROM KPIEntryEntity e2 WHERE e2.assignmentId = e.assignmentId)";
 
-        List<KPIEntryEntity> entities = em.createQuery(sql, KPIEntryEntity.class)
-                .setParameter("pid", projectId.value())
-                .getResultList();
+        try {
+            List<KPIEntryEntity> entities = em.createQuery(sql, KPIEntryEntity.class)
+                    .setParameter("pid", projectId.value())
+                    .getResultList();
 
-        return entities.stream()
-                .map(mapper::toDomainModel)
-                .collect(Collectors.toMap(
-                        KPIEntry::getKpiAssignmentId,
-                        Function.identity()
-                ));
+            return entities.stream()
+                    .map(mapper::toDomainModel)
+                    .collect(Collectors.toMap(
+                            KPIEntry::getKpiAssignmentId,
+                            Function.identity()
+                    ));
+        } catch (PersistenceException ex) {
+            throw new InfrastructureException("Database access failed for project with ID: " + projectId.value(), ex);
+        }
     }
 
     @Override
-    public Page<KPIEntry> findByFilter(KPIAssignmentId id, Instant from, Instant to, PageRequest pageRequest){
-        try{
+    public Page<KPIEntry> findByFilter(KPIAssignmentId id, Instant from, Instant to, PageRequest pageRequest) {
+        try {
             CriteriaBuilder cb = em.getCriteriaBuilder();
             long total = countSearchResults(cb, id, from, to);
 
-            if(total == 0){
+            if (total == 0) {
                 return new Page<>(List.of(), pageRequest, 0);
             }
 
             List<KPIEntryEntity> entities = fetchPageResults(cb, id, from, to, pageRequest);
             return new Page<>(mapper.toDomainModels(entities), pageRequest, total);
-        } catch (PersistenceException ex){
-            throw new InfrastructureException("Failed to execute KPIEntry filter query", ex);
+        } catch (PersistenceException ex) {
+            throw new InfrastructureException("Failed to execute kpiEntry filter query", ex);
         }
     }
 
     @Override
     @Transactional
-    public void save(KPIEntry kpiEntry){
-        try{
+    public void save(KPIEntry kpiEntry) {
+        try {
             em.persist(mapper.toPersistenceModel(kpiEntry));
             em.flush();
-        } catch (PersistenceException ex){
-            if(ExceptionUtils.isUniqueConstraintViolation(ex)){
+        } catch (PersistenceException ex) {
+            if (ExceptionUtils.isUniqueConstraintViolation(ex)) {
                 throw new AlreadyExistsException("KPIEntry with kpiAssignmentId and timestamp already exists", ex);
             }
             throw new InfrastructureException("Failed to save new kpiEntry", ex);
@@ -122,13 +125,13 @@ public class KPIEntryRepositoryAdapter implements KPIEntryRepository {
 
     @Override
     @Transactional
-    public void delete(KPIEntryId id){
-        try{
+    public void delete(KPIEntryId id) {
+        try {
             KPIEntryEntity kpiEntry = em.find(KPIEntryEntity.class, id.value());
-            if(kpiEntry != null){
+            if (kpiEntry != null) {
                 em.remove(kpiEntry);
             }
-        } catch (PersistenceException ex){
+        } catch (PersistenceException ex) {
             throw new InfrastructureException("Failed to delete kpiEntry with ID: " + id.value(), ex);
         }
     }
@@ -175,5 +178,4 @@ public class KPIEntryRepositoryAdapter implements KPIEntryRepository {
 
         return predicates.toArray(Predicate[]::new);
     }
-
 }

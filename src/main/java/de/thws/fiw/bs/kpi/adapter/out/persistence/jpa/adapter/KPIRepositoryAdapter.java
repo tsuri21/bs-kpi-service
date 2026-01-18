@@ -40,7 +40,7 @@ public class KPIRepositoryAdapter implements KPIRepository {
             KPIEntity kpi = em.find(KPIEntity.class, id.value());
             return Optional.ofNullable(kpi).map(mapper::toDomainModel);
         } catch (PersistenceException ex) {
-            throw new InfrastructureException("Database access failed for ID: " + id.value(), ex);
+            throw new InfrastructureException("Database access failed for KPI with ID: " + id.value(), ex);
         }
     }
 

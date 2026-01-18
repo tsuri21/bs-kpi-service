@@ -41,7 +41,7 @@ public class KPIAssignmentRepositoryAdapter implements KPIAssignmentRepository {
             KPIAssignmentEntity kpiAssignment = em.find(KPIAssignmentEntity.class, id.value());
             return Optional.ofNullable(kpiAssignment).map(mapper::toDomainModel);
         } catch (PersistenceException ex) {
-            throw new InfrastructureException("Database access failed for ID: " + id.value(), ex);
+            throw new InfrastructureException("Database access failed for kpiAssignment with ID: " + id.value(), ex);
         }
     }
 
