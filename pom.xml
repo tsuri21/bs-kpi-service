@@ -18,9 +18,10 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
         <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
-        <quarkus.platform.version>3.30.2</quarkus.platform.version>
+        <quarkus.platform.version>3.30.6</quarkus.platform.version>
         <surefire-plugin.version>3.5.3</surefire-plugin.version>
         <failsafe-plugin.version>3.5.3</failsafe-plugin.version>
+        <bcrypt.version>0.10.2</bcrypt.version>
         <docker-maven-plugin.version>0.48.0</docker-maven-plugin.version>
         <it.backend.wait.url>http://localhost:8080/api</it.backend.wait.url>
         <skipITs>true</skipITs>
@@ -62,6 +63,19 @@
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-hibernate-validator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-jwt</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-jwt-build</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>at.favre.lib</groupId>
+            <artifactId>bcrypt</artifactId>
+            <version>${bcrypt.version}</version>
         </dependency>
         <dependency>
             <groupId>net.datafaker</groupId>
