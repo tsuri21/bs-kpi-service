@@ -164,8 +164,10 @@ class KPIAssignmentServiceTest {
 
         KPIAssignmentCommand cmd = createKpiAssignmentCmdForRange(assignmentId, kpiId, projectId);
 
+        KPIAssignment kpiAssignment = mock(KPIAssignment.class);
+        when(kpiAssignmentRepository.findById(assignmentId)).thenReturn(Optional.of(kpiAssignment));
+
         when(kpiRepository.findById(kpiId)).thenReturn(Optional.empty());
-        when(projectRepository.findById(projectId)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> kpiAssignmentService.update(cmd));
         verify(kpiAssignmentRepository, never()).update(any());
@@ -178,6 +180,9 @@ class KPIAssignmentServiceTest {
         ProjectId projectId = ProjectId.newId();
 
         KPIAssignmentCommand cmd = createKpiAssignmentCmdForRange(assignmentId, kpiId, projectId);
+
+        KPIAssignment kpiAssignment = mock(KPIAssignment.class);
+        when(kpiAssignmentRepository.findById(assignmentId)).thenReturn(Optional.of(kpiAssignment));
 
         KPI kpi = new KPI(kpiId, new Name("Test"), TargetDestination.RANGE);
         when(kpiRepository.findById(kpiId)).thenReturn(Optional.of(kpi));
