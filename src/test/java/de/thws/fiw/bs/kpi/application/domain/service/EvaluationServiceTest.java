@@ -22,10 +22,11 @@ import de.thws.fiw.bs.kpi.application.port.PageRequest;
 import de.thws.fiw.bs.kpi.application.port.out.KPIAssignmentRepository;
 import de.thws.fiw.bs.kpi.application.port.out.KPIEntryRepository;
 import de.thws.fiw.bs.kpi.application.port.out.ProjectRepository;
-import io.quarkus.test.InjectMock;
-import io.quarkus.test.junit.QuarkusTest;
-import jakarta.inject.Inject;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -37,19 +38,19 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@QuarkusTest
+@ExtendWith(MockitoExtension.class)
 class EvaluationServiceTest {
 
-    @Inject
+    @InjectMocks
     EvaluationService evaluationService;
 
-    @InjectMock
+    @Mock
     KPIAssignmentRepository kpiAssignmentRepository;
 
-    @InjectMock
+    @Mock
     KPIEntryRepository kpiEntryRepository;
 
-    @InjectMock
+    @Mock
     ProjectRepository projectRepository;
 
     private static final Clock FIXED_CLOCK = Clock.fixed(Instant.parse("2025-01-10T10:00:00Z"), ZoneOffset.UTC);

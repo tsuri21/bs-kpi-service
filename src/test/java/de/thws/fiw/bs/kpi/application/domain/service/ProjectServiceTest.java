@@ -4,23 +4,24 @@ import de.thws.fiw.bs.kpi.application.domain.exception.ResourceNotFoundException
 import de.thws.fiw.bs.kpi.application.domain.model.project.Project;
 import de.thws.fiw.bs.kpi.application.domain.model.project.ProjectId;
 import de.thws.fiw.bs.kpi.application.port.out.ProjectRepository;
-import io.quarkus.test.InjectMock;
-import io.quarkus.test.junit.QuarkusTest;
-import jakarta.inject.Inject;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@QuarkusTest
+@ExtendWith(MockitoExtension.class)
 class ProjectServiceTest {
 
-    @Inject
+    @InjectMocks
     ProjectService projectService;
 
-    @InjectMock
+    @Mock
     ProjectRepository projectRepository;
 
     @Test

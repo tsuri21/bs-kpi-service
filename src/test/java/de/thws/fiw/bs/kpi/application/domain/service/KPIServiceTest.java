@@ -6,24 +6,25 @@ import de.thws.fiw.bs.kpi.application.domain.model.kpi.KPIId;
 import de.thws.fiw.bs.kpi.application.domain.model.kpi.KPI;
 import de.thws.fiw.bs.kpi.application.domain.model.kpi.TargetDestination;
 import de.thws.fiw.bs.kpi.application.port.out.KPIRepository;
-import io.quarkus.test.InjectMock;
-import io.quarkus.test.junit.QuarkusTest;
-import jakarta.inject.Inject;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@QuarkusTest
+@ExtendWith(MockitoExtension.class)
 class KPIServiceTest {
 
-    @Inject
+    @InjectMocks
     KPIService kpiService;
 
-    @InjectMock
+    @Mock
     KPIRepository kpiRepository;
 
     @Test
