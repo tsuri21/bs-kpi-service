@@ -8,6 +8,8 @@ import de.thws.fiw.bs.kpi.application.domain.exception.InfrastructureException;
 import de.thws.fiw.bs.kpi.application.domain.model.user.User;
 import de.thws.fiw.bs.kpi.application.domain.model.user.UserId;
 import de.thws.fiw.bs.kpi.application.domain.model.user.Username;
+import de.thws.fiw.bs.kpi.application.port.Page;
+import de.thws.fiw.bs.kpi.application.port.PageRequest;
 import de.thws.fiw.bs.kpi.application.port.out.UserRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -18,6 +20,7 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
 import jakarta.transaction.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @ApplicationScoped
@@ -57,6 +60,37 @@ public class UserRepositoryAdapter implements UserRepository {
             throw new InfrastructureException("Failed to find user by username: " + name.value(), ex);
         }
     }
+
+    @Override
+    public Page<User> findAll(PageRequest pageRequest) {
+        try {
+            CriteriaBuilder cb = em.getCriteriaBuilder();
+
+            CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+            Root<UserEntity> countRoot = countQuery.from(UserEntity.class);
+            countQuery.select(cb.count(countRoot));
+            Long total = em.createQuery(countQuery).getSingleResult();
+
+            if (total == 0) {
+                return new Page<>(List.of(), pageRequest, 0);
+            }
+
+            CriteriaQuery<UserEntity> selectQuery = cb.createQuery(UserEntity.class);
+            Root<UserEntity> selectRoot = selectQuery.from(UserEntity.class);
+            selectQuery.select(selectRoot);
+
+            List<UserEntity> entities = em.createQuery(selectQuery)
+                    .setFirstResult(pageRequest.offset())
+                    .setMaxResults(pageRequest.pageSize())
+                    .getResultList();
+
+            return new Page<>(mapper.toDomainModels(entities), pageRequest, total);
+
+        } catch (PersistenceException ex) {
+            throw new InfrastructureException("Failed to load users", ex);
+        }
+    }
+
 
     @Override
     @Transactional

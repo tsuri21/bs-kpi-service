@@ -3,6 +3,8 @@ package de.thws.fiw.bs.kpi.application.domain.service;
 import de.thws.fiw.bs.kpi.application.domain.exception.ResourceNotFoundException;
 import de.thws.fiw.bs.kpi.application.domain.model.user.User;
 import de.thws.fiw.bs.kpi.application.domain.model.user.UserId;
+import de.thws.fiw.bs.kpi.application.port.Page;
+import de.thws.fiw.bs.kpi.application.port.PageRequest;
 import de.thws.fiw.bs.kpi.application.port.in.UserManagementUseCase;
 import de.thws.fiw.bs.kpi.application.port.out.UserRepository;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -19,6 +21,11 @@ public class UserManagementService implements UserManagementUseCase {
     @Override
     public Optional<User> readById(UserId id) {
         return userRepository.findById(id);
+    }
+
+    @Override
+    public Page<User> readAll(PageRequest pageRequest) {
+        return userRepository.findAll(pageRequest);
     }
 
     @Override
