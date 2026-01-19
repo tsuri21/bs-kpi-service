@@ -4,12 +4,12 @@ import java.util.Objects;
 
 public record Username(String value) {
     public Username {
-        Objects.requireNonNull(value, "Name must not be null");
+        Objects.requireNonNull(value, "Username must not be null");
         if (value.isBlank()) {
-            throw new IllegalArgumentException("Name must not be blank");
+            throw new IllegalArgumentException("Username must not be blank");
         }
         if (value.contains(":")) {
-            throw new IllegalArgumentException("Name must not contain columns");
+            throw new IllegalArgumentException("Username must not contain colons");
         }
     }
 }
