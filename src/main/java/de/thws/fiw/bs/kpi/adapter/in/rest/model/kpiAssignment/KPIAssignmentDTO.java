@@ -4,6 +4,7 @@ import de.thws.fiw.bs.kpi.adapter.in.rest.model.AbstractDTO;
 
 import jakarta.validation.constraints.NotNull;
 
+import java.util.Objects;
 import java.util.UUID;
 
 public class KPIAssignmentDTO extends AbstractDTO {
@@ -73,5 +74,18 @@ public class KPIAssignmentDTO extends AbstractDTO {
 
     public void setTargetValue(Double targetValue) {
         this.targetValue = targetValue;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+
+        if (o == null || getClass() != o.getClass()) return false;
+        KPIAssignmentDTO that = (KPIAssignmentDTO) o;
+        return Double.compare(green, that.green) == 0 && Double.compare(yellow, that.yellow) == 0 && Objects.equals(targetValue, that.targetValue) && Objects.equals(kpiId, that.kpiId) && Objects.equals(projectId, that.projectId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(green, yellow, targetValue, kpiId, projectId);
     }
 }

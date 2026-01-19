@@ -7,6 +7,7 @@ import de.thws.fiw.bs.kpi.adapter.in.rest.model.kpi.KPIDTO;
 import de.thws.fiw.bs.kpi.adapter.in.rest.model.kpi.KPIEvaluationResultDTO;
 import de.thws.fiw.bs.kpi.adapter.in.rest.model.kpiAssignment.CreateKPIAssignmentDTO;
 import de.thws.fiw.bs.kpi.adapter.in.rest.model.kpiAssignment.KPIAssignmentDTO;
+import de.thws.fiw.bs.kpi.adapter.in.rest.util.CachingUtil;
 import de.thws.fiw.bs.kpi.adapter.in.rest.util.HypermediaLinkService;
 import de.thws.fiw.bs.kpi.application.domain.model.kpi.KPI;
 import de.thws.fiw.bs.kpi.application.domain.model.kpi.KPIEvaluationResult;
@@ -23,8 +24,6 @@ import de.thws.fiw.bs.kpi.application.port.in.KPIUseCase;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.container.ResourceContext;
@@ -60,6 +59,9 @@ public class KPIAssignmentResource {
     @Inject
     HypermediaLinkService linkService;
 
+    @Inject
+    CachingUtil cachingUtil;
+
     @Context
     ResourceContext resourceContext;
 
@@ -73,27 +75,32 @@ public class KPIAssignmentResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getById(
             @PathParam("pId") UUID pId,
-            @NotNull @PathParam("aId") UUID aId) {
+            @PathParam("aId") UUID aId,
+            @Context Request request) {
         KPIAssignmentId assignmentId = new KPIAssignmentId(aId);
         KPIAssignment assignment = kpiAssignmentUseCase.readById(assignmentId).orElseThrow(NotFoundException::new);
         KPIAssignmentDTO assignmentDto = mapper.toApiModel(assignment);
+        Response.ResponseBuilder builder = cachingUtil.getConditionalBuilder(request, assignmentDto);
 
-        URI selfUri = uriInfo.getAbsolutePath();
-        linkService.setSelfLinkSub(assignmentDto, selfUri);
-        Link self = linkService.buildSelfLinkSub(selfUri);
-        Link delete = linkService.buildDeleteLinkSub(selfUri, KPIAssignmentResource.class);
-        Link update = linkService.buildUpdateLinkSub(selfUri, KPIAssignmentResource.class);
-        String allKPIAssignments = linkService.buildCollectionLinkSub(selfUri, KPIAssignmentResource.class);
-        URI entryUri = UriBuilder.fromUri(selfUri)
-                .path("entries/1")
-                .build();
-        String allEntries = linkService.buildCollectionLinkSub(entryUri, KPIEntryResource.class, "fron", "to", "kpiId");
-        Link evaluate = linkService.buildEvaluationLinkSub(selfUri, KPIAssignmentResource.class);
-        return Response.ok(assignmentDto)
-                .links(self, delete, update, evaluate)
-                .header("Link", allKPIAssignments)
-                .header("Link", allEntries)
-                .build();
+        if (builder.build().getStatus() == Response.Status.OK.getStatusCode()) {
+            URI selfUri = uriInfo.getAbsolutePath();
+            linkService.setSelfLinkSub(assignmentDto, selfUri);
+            Link self = linkService.buildSelfLinkSub(selfUri);
+            Link delete = linkService.buildDeleteLinkSub(selfUri, KPIAssignmentResource.class);
+            Link update = linkService.buildUpdateLinkSub(selfUri, KPIAssignmentResource.class);
+            String allKPIAssignments = linkService.buildCollectionLinkSub(selfUri, KPIAssignmentResource.class);
+            URI entryUri = UriBuilder.fromUri(selfUri)
+                    .path("entries/1")
+                    .build();
+            String allEntries = linkService.buildCollectionLinkSub(entryUri, KPIEntryResource.class, "fron", "to", "kpiId");
+            Link evaluate = linkService.buildEvaluationLinkSub(selfUri, KPIAssignmentResource.class);
+            return builder
+                    .links(self, delete, update, evaluate)
+                    .header("Link", allKPIAssignments)
+                    .header("Link", allEntries)
+                    .build();
+        }
+        return builder.build();
     }
 
     @GET
@@ -101,32 +108,37 @@ public class KPIAssignmentResource {
     public Response getAll(
             @QueryParam("KPIId") UUID kpiId,
             @PathParam("pId") UUID pId,
-            @Positive @DefaultValue("1") @QueryParam("page") int page) {
+            @Positive @DefaultValue("1") @QueryParam("page") int page,
+            @Context Request request) {
         final int PAGE_SIZE = 10;
         KPIId domainKPIId = (kpiId == null) ? null : new KPIId(kpiId);
 
-        PageRequest request = new PageRequest(page, PAGE_SIZE);
-        Page<KPIAssignment> assignmentPage = kpiAssignmentUseCase.readAll(domainKPIId, new ProjectId(pId), request);
+        PageRequest pageRequest = new PageRequest(page, PAGE_SIZE);
+        Page<KPIAssignment> assignmentPage = kpiAssignmentUseCase.readAll(domainKPIId, new ProjectId(pId), pageRequest);
         List<KPIAssignmentDTO> assignments = mapper.toApiModels(assignmentPage.content());
 
-        URI selfUri = uriInfo.getAbsolutePath();
-        URI kpiUri = UriBuilder.fromUri(selfUri)
-                .path("availableKpis/1")
-                .build();
-        String availableKpisLink = linkService.buildCollectionLinkSub(kpiUri, KPIResource.class);
-        linkService.setSelfLinksSub(assignments, selfUri);
-        String project = linkService.buildSelfLinkSubLayerBack(selfUri, ProjectResource.class);
-        Link create = linkService.buildCreateLinkSub(selfUri, KPIAssignmentResource.class);
-        //Link desc = linkService.buildDescriptionLink();
-        Link[] pagination = linkService.buildPaginationLinks(assignmentPage);
+        Response.ResponseBuilder builder = cachingUtil.getConditionalBuilder(request, assignments);
 
-        return Response.ok(assignments)
-                .links(pagination)
-                .links(create)
-                .header("Link", project)
-                .header("Link", availableKpisLink)
-                .header("X-Total-Count", assignmentPage.totalElements())
-                .build();
+        if (builder.build().getStatus() == Response.Status.OK.getStatusCode()) {
+            URI selfUri = uriInfo.getAbsolutePath();
+            URI kpiUri = UriBuilder.fromUri(selfUri)
+                    .path("availableKpis/1")
+                    .build();
+            String availableKpisLink = linkService.buildCollectionLinkSub(kpiUri, KPIResource.class);
+            linkService.setSelfLinksSub(assignments, selfUri);
+            String project = linkService.buildSelfLinkSubLayerBack(selfUri, ProjectResource.class);
+            Link create = linkService.buildCreateLinkSub(selfUri, KPIAssignmentResource.class);
+            Link[] pagination = linkService.buildPaginationLinks(assignmentPage);
+
+            return builder
+                    .links(pagination)
+                    .links(create)
+                    .header("Link", project)
+                    .header("Link", availableKpisLink)
+                    .header("X-Total-Count", assignmentPage.totalElements())
+                    .build();
+        }
+        return builder.build();
     }
 
     @GET
@@ -134,30 +146,36 @@ public class KPIAssignmentResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAvailableKpis(
             @PathParam("pId") UUID pId,
-            @Positive @DefaultValue("1") @QueryParam("page") int page) {
+            @Positive @DefaultValue("1") @QueryParam("page") int page,
+            @Context Request request) {
 
         final int PAGE_SIZE = 10;
 
-        PageRequest request = new PageRequest(page, PAGE_SIZE);
-        Page<KPI> kpiPage = kpiUseCase.readAll(null, request);
+        PageRequest pageRequest = new PageRequest(page, PAGE_SIZE);
+        Page<KPI> kpiPage = kpiUseCase.readAll(null, pageRequest);
         List<KPIDTO> kpis = kpiMapper.toApiModels(kpiPage.content());
-        linkService.setSelfLinks(kpis, KPIResource.class);
 
-        URI selfUri = uriInfo.getAbsolutePath();
-        URI assignments = UriBuilder.fromUri(selfUri)
-                .path("..")
-                .build()
-                .normalize();
-        Link create = linkService.buildCreateLinkSub(assignments, KPIAssignmentResource.class);
-        String allAssignments = linkService.buildCollectionLinkSub(assignments, KPIAssignment.class);
-        Link[] pagination = linkService.buildPaginationLinks(kpiPage);
+        Response.ResponseBuilder builder = cachingUtil.getConditionalBuilder(request, kpis);
 
-        return Response.ok(kpis)
-                .links(create)
-                .links(pagination)
-                .header("Link", allAssignments)
-                .header("X-Total-Count", kpiPage.totalElements())
-                .build();
+        if (builder.build().getStatus() == Response.Status.OK.getStatusCode()) {
+            linkService.setSelfLinks(kpis, KPIResource.class);
+            URI selfUri = uriInfo.getAbsolutePath();
+            URI assignments = UriBuilder.fromUri(selfUri)
+                    .path("..")
+                    .build()
+                    .normalize();
+            Link create = linkService.buildCreateLinkSub(assignments, KPIAssignmentResource.class);
+            String allAssignments = linkService.buildCollectionLinkSub(assignments, KPIAssignment.class);
+            Link[] pagination = linkService.buildPaginationLinks(kpiPage);
+
+            return builder
+                    .links(create)
+                    .links(pagination)
+                    .header("Link", allAssignments)
+                    .header("X-Total-Count", kpiPage.totalElements())
+                    .build();
+        }
+        return builder.build();
     }
 
     @POST
@@ -182,21 +200,28 @@ public class KPIAssignmentResource {
     @PUT
     @Path("{aId}")
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
     public Response update(
             @PathParam("pId") UUID pId,
             @PathParam("aId") UUID aId,
-            @Valid CreateKPIAssignmentDTO updateDto) {
+            @Valid KPIAssignmentDTO updateDto,
+            @Context Request request) {
 
-        KPIAssignmentId assignmentId = new KPIAssignmentId(aId);
+        if (!aId.equals(updateDto.getId())) {
+            throw new IllegalArgumentException("The ID in the path does not match the ID in the body.");
+        }
 
-        KPIAssignmentCommand command = mapper.toDomainModelByCreate(updateDto, assignmentId, pId);
+        KPIAssignmentCommand command = mapper.toDomainModel(updateDto);
+
+        KPIAssignment currentAssignment = kpiAssignmentUseCase.readById(new KPIAssignmentId(aId)).orElseThrow(NotFoundException::new);
+        cachingUtil.checkPreconditions(request, mapper.toApiModel(currentAssignment));
+
+        EntityTag newEtag = new EntityTag(Integer.toHexString(updateDto.hashCode()));
 
         kpiAssignmentUseCase.update(command);
-
         URI selfUri = uriInfo.getAbsolutePath();
 
         return Response.noContent()
+                .tag(newEtag)
                 .links(linkService.buildSelfLinkSub(selfUri))
                 .header("Link", linkService.buildCollectionLinkSub(selfUri, KPIAssignmentResource.class, "kpiId"))
                 .build();
@@ -204,9 +229,9 @@ public class KPIAssignmentResource {
 
     @DELETE
     @Path("{aId}")
-    public Response deleteById(
+    public Response delete(
             @PathParam("pId") UUID pId,
-            @NotNull @PathParam("aId") UUID aId) {
+            @PathParam("aId") UUID aId) {
         kpiAssignmentUseCase.delete(new KPIAssignmentId(aId));
 
         URI selfUri = uriInfo.getAbsolutePath();
@@ -218,15 +243,22 @@ public class KPIAssignmentResource {
     @GET
     @Path("{aId}/evaluate")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getEvaluation(@NotNull @PathParam("aId") UUID aId) {
+    public Response getEvaluation(
+            @PathParam("aId") UUID aId,
+            @Context Request request) {
         KPIEvaluationResult result = evaluationUseCase.evaluateKPI(new KPIAssignmentId(aId));
         KPIEvaluationResultDTO apiResult = evaluationMapper.toApiModel(result);
 
-        URI selfUri = uriInfo.getAbsolutePath();
-        String self = linkService.buildSelfLinkSubLayerBack(selfUri, KPIAssignmentResource.class);
+        Response.ResponseBuilder builder = cachingUtil.getConditionalBuilder(request, apiResult);
 
-        return Response.ok(apiResult)
-                .header("Link", self)
-                .build();
+        if (builder.build().getStatus() == Response.Status.OK.getStatusCode()) {
+            URI selfUri = uriInfo.getAbsolutePath();
+            String self = linkService.buildSelfLinkSubLayerBack(selfUri, KPIAssignmentResource.class);
+
+            return builder
+                    .header("Link", self)
+                    .build();
+        }
+        return builder.build();
     }
 }

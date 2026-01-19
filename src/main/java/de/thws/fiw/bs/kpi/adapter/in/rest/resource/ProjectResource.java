@@ -5,6 +5,7 @@ import de.thws.fiw.bs.kpi.adapter.in.rest.mapper.ProjectEvaluationResultApiMappe
 import de.thws.fiw.bs.kpi.adapter.in.rest.model.project.CreateProjectDTO;
 import de.thws.fiw.bs.kpi.adapter.in.rest.model.project.ProjectDTO;
 import de.thws.fiw.bs.kpi.adapter.in.rest.model.project.ProjectEvaluationResultDTO;
+import de.thws.fiw.bs.kpi.adapter.in.rest.util.CachingUtil;
 import de.thws.fiw.bs.kpi.adapter.in.rest.util.HypermediaLinkService;
 import de.thws.fiw.bs.kpi.application.domain.model.Name;
 import de.thws.fiw.bs.kpi.application.domain.model.project.Project;
@@ -22,7 +23,6 @@ import jakarta.validation.constraints.Positive;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.container.ResourceContext;
 import jakarta.ws.rs.core.*;
-import org.jboss.resteasy.annotations.cache.Cache;
 import org.jboss.resteasy.annotations.cache.NoCache;
 
 import java.net.URI;
@@ -47,6 +47,9 @@ public class ProjectResource {
     @Inject
     HypermediaLinkService linkService;
 
+    @Inject
+    CachingUtil cachingUtil;
+
     @Context
     ResourceContext resourceContext;
 
@@ -60,54 +63,64 @@ public class ProjectResource {
 
     @GET
     @Path("{id}")
-    @Cache(maxAge = 60, isPrivate = true)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getById(@NotNull @PathParam("id") UUID id) {
+    public Response getById(
+            @PathParam("id") UUID id,
+            @Context Request request) {
         ProjectId projectId = new ProjectId(id);
         Project project = projectUseCase.readById(projectId).orElseThrow(NotFoundException::new);
         ProjectDTO projectDTO = mapper.toApiModel(project);
 
-        linkService.setSelfLink(projectDTO);
-        Link self = linkService.buildSelfLink(id);
-        Link delete = linkService.buildDeleteLink(id);
-        Link update = linkService.buildUpdateLink(id);
-        URI selfUri = uriInfo.getAbsolutePath();
-        URI assignments = UriBuilder.fromUri(selfUri).path("assignments/1").build();
-        String allAssignments = linkService.buildCollectionLinkSub(assignments, KPIAssignmentResource.class, "kpiId");
-        String allProjects = linkService.buildCollectionLink("name", "repoUrl");
-        Link evalutaion = linkService.buildEvaluationLinkSub(selfUri, ProjectResource.class);
+        Response.ResponseBuilder builder = cachingUtil.getConditionalBuilder(request, projectDTO);
 
-        return Response.ok(projectDTO)
-                .links(self, delete, update, evalutaion)
-                .header("Link", allProjects)
-                .header("Link", allAssignments)
-                .build();
+        if (builder.build().getStatus() == Response.Status.OK.getStatusCode()) {
+            linkService.setSelfLink(projectDTO);
+            Link self = linkService.buildSelfLink(id);
+            Link delete = linkService.buildDeleteLink(id);
+            Link update = linkService.buildUpdateLink(id);
+            URI selfUri = uriInfo.getAbsolutePath();
+            URI assignments = UriBuilder.fromUri(selfUri).path("assignments/1").build();
+            String allAssignments = linkService.buildCollectionLinkSub(assignments, KPIAssignmentResource.class, "kpiId");
+            String allProjects = linkService.buildCollectionLink("name", "repoUrl");
+            Link evalutaion = linkService.buildEvaluationLinkSub(selfUri, ProjectResource.class);
+
+            return builder
+                    .links(self, delete, update, evalutaion)
+                    .header("Link", allProjects)
+                    .header("Link", allAssignments)
+                    .build();
+        }
+        return builder.build();
     }
 
     @GET
-    @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAll(
             @QueryParam("name") Name name,
             @QueryParam("repoUrl") RepoUrl repoUrl,
-            @Positive @DefaultValue("1") @QueryParam("page") int page
-    ) {
+            @Positive @DefaultValue("1") @QueryParam("page") int page,
+            @Context Request request) {
         final int PAGE_SIZE = 10;
 
         PageRequest pageRequest = new PageRequest(page, PAGE_SIZE);
         Page<Project> projectPage = projectUseCase.readAll(name, repoUrl, pageRequest);
         List<ProjectDTO> projects = mapper.toApiModels(projectPage.content());
 
-        linkService.setSelfLinks(projects);
-        Link create = linkService.buildCreateLink();
-        Link desc = linkService.buildDescriptionLink();
-        Link[] pagination = linkService.buildPaginationLinks(projectPage);
+        Response.ResponseBuilder builder = cachingUtil.getConditionalBuilder(request, projects);
 
-        return Response.ok(projects)
-                .links(create, desc)
-                .links(pagination)
-                .header("X-Total-Count", projectPage.totalElements())
-                .build();
+        if (builder.build().getStatus() == Response.Status.OK.getStatusCode()) {
+            linkService.setSelfLinks(projects);
+            Link create = linkService.buildCreateLink();
+            Link desc = linkService.buildDescriptionLink();
+            Link[] pagination = linkService.buildPaginationLinks(projectPage);
+
+            return builder
+                    .links(create, desc)
+                    .links(pagination)
+                    .header("X-Total-Count", projectPage.totalElements())
+                    .build();
+        }
+        return builder.build();
     }
 
     @POST
@@ -127,22 +140,31 @@ public class ProjectResource {
     @PUT
     @Path("{id}")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response update(@NotNull @PathParam("id") UUID id, @Valid ProjectDTO projectDto) {
+    public Response update(
+            @PathParam("id") UUID id,
+            @Valid ProjectDTO projectDto,
+            @Context Request request) {
         if (!id.equals(projectDto.getId())) {
             throw new IllegalArgumentException("The ID in the path does not match the ID in the body.");
         }
+
+        Project currentProject = projectUseCase.readById(new ProjectId(id)).orElseThrow(NotFoundException::new);
+        cachingUtil.checkPreconditions(request, mapper.toApiModel(currentProject));
+
+        EntityTag newEtag = new EntityTag(Integer.toHexString(projectDto.hashCode()));
 
         Project project = mapper.toDomainModel(projectDto);
         projectUseCase.update(project);
 
         return Response.noContent()
+                .tag(newEtag)
                 .links(linkService.buildSelfLink(id))
                 .build();
     }
 
     @DELETE
     @Path("{id}")
-    public Response delete(@NotNull @PathParam("id") UUID id) {
+    public Response delete(@PathParam("id") UUID id) {
         projectUseCase.delete(new ProjectId(id));
 
         return Response.noContent()
@@ -153,15 +175,22 @@ public class ProjectResource {
     @GET
     @Path("{id}/evaluate")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response evaluate(@NotNull @PathParam("id") UUID id) {
+    public Response evaluate(
+            @PathParam("id") UUID id,
+            @Context Request request) {
         ProjectEvaluationResult result = evaluationUseCase.evaluateProject(new ProjectId(id));
         ProjectEvaluationResultDTO apiResult = evaluationMapper.toApiModel(result);
 
-        URI selfUri = uriInfo.getAbsolutePath();
-        String self = linkService.buildSelfLinkSubLayerBack(selfUri, ProjectResource.class);
+        Response.ResponseBuilder builder = cachingUtil.getConditionalBuilder(request, apiResult);
 
-        return Response.ok(apiResult)
-                .header("Link", self)
-                .build();
+        if (builder.build().getStatus() == Response.Status.OK.getStatusCode()) {
+            URI selfUri = uriInfo.getAbsolutePath();
+            String self = linkService.buildSelfLinkSubLayerBack(selfUri, ProjectResource.class);
+
+            return builder
+                    .header("Link", self)
+                    .build();
+        }
+        return builder.build();
     }
 }

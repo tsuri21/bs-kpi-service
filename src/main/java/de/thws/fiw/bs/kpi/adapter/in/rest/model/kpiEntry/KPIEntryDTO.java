@@ -3,6 +3,7 @@ package de.thws.fiw.bs.kpi.adapter.in.rest.model.kpiEntry;
 import de.thws.fiw.bs.kpi.adapter.in.rest.model.AbstractDTO;
 import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
+import java.util.Objects;
 import java.util.UUID;
 
 public class KPIEntryDTO extends AbstractDTO {
@@ -49,5 +50,17 @@ public class KPIEntryDTO extends AbstractDTO {
 
     public void setMeasurement(double measurement) {
         this.measurement = measurement;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        KPIEntryDTO that = (KPIEntryDTO) o;
+        return Double.compare(measurement, that.measurement) == 0 && Objects.equals(kpiAssignmentId, that.kpiAssignmentId) && Objects.equals(timestamp, that.timestamp);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(kpiAssignmentId, timestamp, measurement);
     }
 }

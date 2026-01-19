@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 import java.net.URI;
+import java.util.Objects;
 import java.util.UUID;
 
 public class ProjectDTO extends AbstractDTO {
@@ -38,5 +39,17 @@ public class ProjectDTO extends AbstractDTO {
 
     public void setRepoUrl(URI repoUrl) {
         this.repoUrl = repoUrl;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        ProjectDTO that = (ProjectDTO) o;
+        return Objects.equals(name, that.name) && Objects.equals(repoUrl, that.repoUrl);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, repoUrl);
     }
 }
