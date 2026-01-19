@@ -2,23 +2,28 @@ package de.thws.fiw.bs.kpi.adapter.in.rest.resource;
 
 import de.thws.fiw.bs.kpi.adapter.in.rest.mapper.KPIApiMapper;
 import de.thws.fiw.bs.kpi.adapter.in.rest.mapper.KPIAssignmentAPIMapper;
+import de.thws.fiw.bs.kpi.adapter.in.rest.mapper.KPIEvaluationResultApiMapper;
 import de.thws.fiw.bs.kpi.adapter.in.rest.model.kpi.KPIDTO;
+import de.thws.fiw.bs.kpi.adapter.in.rest.model.kpi.KPIEvaluationResultDTO;
 import de.thws.fiw.bs.kpi.adapter.in.rest.model.kpiAssignment.CreateKPIAssignmentDTO;
 import de.thws.fiw.bs.kpi.adapter.in.rest.model.kpiAssignment.KPIAssignmentDTO;
 import de.thws.fiw.bs.kpi.adapter.in.rest.util.HypermediaLinkService;
 import de.thws.fiw.bs.kpi.application.domain.model.kpi.KPI;
+import de.thws.fiw.bs.kpi.application.domain.model.kpi.KPIEvaluationResult;
 import de.thws.fiw.bs.kpi.application.domain.model.kpi.KPIId;
 import de.thws.fiw.bs.kpi.application.domain.model.kpiAssignment.KPIAssignment;
 import de.thws.fiw.bs.kpi.application.domain.model.kpiAssignment.KPIAssignmentId;
 import de.thws.fiw.bs.kpi.application.domain.model.project.ProjectId;
 import de.thws.fiw.bs.kpi.application.port.Page;
 import de.thws.fiw.bs.kpi.application.port.PageRequest;
+import de.thws.fiw.bs.kpi.application.port.in.EvaluationUseCase;
 import de.thws.fiw.bs.kpi.application.port.in.KPIAssignmentCommand;
 import de.thws.fiw.bs.kpi.application.port.in.KPIAssignmentUseCase;
 import de.thws.fiw.bs.kpi.application.port.in.KPIUseCase;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.ws.rs.*;
@@ -45,6 +50,12 @@ public class KPIAssignmentResource {
 
     @Inject
     KPIApiMapper kpiMapper;
+
+    @Inject
+    EvaluationUseCase evaluationUseCase;
+
+    @Inject
+    KPIEvaluationResultApiMapper evaluationMapper;
 
     @Inject
     HypermediaLinkService linkService;
@@ -77,9 +88,9 @@ public class KPIAssignmentResource {
                 .path("entries/1")
                 .build();
         String allEntries = linkService.buildCollectionLinkSub(entryUri, KPIEntryResource.class, "fron", "to", "kpiId");
-
+        Link evaluate = linkService.buildEvaluationLinkSub(selfUri, KPIAssignmentResource.class);
         return Response.ok(assignmentDto)
-                .links(self, delete, update)
+                .links(self, delete, update, evaluate)
                 .header("Link", allKPIAssignments)
                 .header("Link", allEntries)
                 .build();
@@ -201,6 +212,21 @@ public class KPIAssignmentResource {
         URI selfUri = uriInfo.getAbsolutePath();
         return Response.noContent()
                 .header("Link", linkService.buildCollectionLinkSub(selfUri, KPIAssignmentResource.class, "kpiId"))
+                .build();
+    }
+
+    @GET
+    @Path("{aId}/evaluate")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getEvaluation(@NotNull @PathParam("aId") UUID aId) {
+        KPIEvaluationResult result = evaluationUseCase.evaluateKPI(new KPIAssignmentId(aId));
+        KPIEvaluationResultDTO apiResult = evaluationMapper.toApiModel(result);
+
+        URI selfUri = uriInfo.getAbsolutePath();
+        String self = linkService.buildSelfLinkSubLayerBack(selfUri, KPIAssignmentResource.class);
+
+        return Response.ok(apiResult)
+                .header("Link", self)
                 .build();
     }
 }

@@ -220,6 +220,17 @@ public class HypermediaLinkService {
                 .build();
     }
 
+    public Link buildEvaluationLinkSub(URI selfUri, Class<?> pathClass) {
+        URI evaluationUri = UriBuilder.fromUri(selfUri)
+                .path("evaluate")
+                .build();
+
+        return Link.fromUri(evaluationUri)
+                .rel("evaluate" + getRelEntityName(pathClass))
+                .type(getMediaType())
+                .build();
+    }
+
     public Link buildCreateLinkSub(URI selfUri, Class<?> pathClass) {
         return Link.fromUri(selfUri)
                 .rel("create" + getRelEntityName(pathClass))

@@ -1,15 +1,19 @@
 package de.thws.fiw.bs.kpi.adapter.in.rest.resource;
 
 import de.thws.fiw.bs.kpi.adapter.in.rest.mapper.ProjectApiMapper;
+import de.thws.fiw.bs.kpi.adapter.in.rest.mapper.ProjectEvaluationResultApiMapper;
 import de.thws.fiw.bs.kpi.adapter.in.rest.model.project.CreateProjectDTO;
 import de.thws.fiw.bs.kpi.adapter.in.rest.model.project.ProjectDTO;
+import de.thws.fiw.bs.kpi.adapter.in.rest.model.project.ProjectEvaluationResultDTO;
 import de.thws.fiw.bs.kpi.adapter.in.rest.util.HypermediaLinkService;
 import de.thws.fiw.bs.kpi.application.domain.model.Name;
 import de.thws.fiw.bs.kpi.application.domain.model.project.Project;
+import de.thws.fiw.bs.kpi.application.domain.model.project.ProjectEvaluationResult;
 import de.thws.fiw.bs.kpi.application.domain.model.project.ProjectId;
 import de.thws.fiw.bs.kpi.application.domain.model.project.RepoUrl;
 import de.thws.fiw.bs.kpi.application.port.Page;
 import de.thws.fiw.bs.kpi.application.port.PageRequest;
+import de.thws.fiw.bs.kpi.application.port.in.EvaluationUseCase;
 import de.thws.fiw.bs.kpi.application.port.in.ProjectUseCase;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -30,6 +34,12 @@ public class ProjectResource {
 
     @Inject
     ProjectUseCase projectUseCase;
+
+    @Inject
+    EvaluationUseCase evaluationUseCase;
+
+    @Inject
+    ProjectEvaluationResultApiMapper evaluationMapper;
 
     @Inject
     ProjectApiMapper mapper;
@@ -65,9 +75,10 @@ public class ProjectResource {
         URI assignments = UriBuilder.fromUri(selfUri).path("assignments/1").build();
         String allAssignments = linkService.buildCollectionLinkSub(assignments, KPIAssignmentResource.class, "kpiId");
         String allProjects = linkService.buildCollectionLink("name", "repoUrl");
+        Link evalutaion = linkService.buildEvaluationLinkSub(selfUri, ProjectResource.class);
 
         return Response.ok(projectDTO)
-                .links(self, delete, update)
+                .links(self, delete, update, evalutaion)
                 .header("Link", allProjects)
                 .header("Link", allAssignments)
                 .build();
@@ -136,6 +147,21 @@ public class ProjectResource {
 
         return Response.noContent()
                 .header("Link", linkService.buildCollectionLink("name", "repoUrl"))
+                .build();
+    }
+
+    @GET
+    @Path("{id}/evaluate")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response evaluate(@NotNull @PathParam("id") UUID id) {
+        ProjectEvaluationResult result = evaluationUseCase.evaluateProject(new ProjectId(id));
+        ProjectEvaluationResultDTO apiResult = evaluationMapper.toApiModel(result);
+
+        URI selfUri = uriInfo.getAbsolutePath();
+        String self = linkService.buildSelfLinkSubLayerBack(selfUri, ProjectResource.class);
+
+        return Response.ok(apiResult)
+                .header("Link", self)
                 .build();
     }
 }
