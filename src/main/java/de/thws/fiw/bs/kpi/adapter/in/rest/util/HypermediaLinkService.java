@@ -2,6 +2,7 @@ package de.thws.fiw.bs.kpi.adapter.in.rest.util;
 
 import de.thws.fiw.bs.kpi.adapter.in.rest.model.AbstractDTO;
 import de.thws.fiw.bs.kpi.adapter.in.rest.model.SelfLink;
+import de.thws.fiw.bs.kpi.adapter.in.rest.resource.RootResource;
 import de.thws.fiw.bs.kpi.application.port.Page;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
@@ -25,6 +26,10 @@ public class HypermediaLinkService {
         this.uriInfo = uriInfo;
         this.headers = headers;
         this.resourceInfo = resourceInfo;
+    }
+
+    public Link buildDispatcherLink() {
+        return buildCustomLink(RootResource.class, "start", "GET");
     }
 
     public URI buildLocationUri(Class<?> pathClass, UUID id) {
@@ -163,7 +168,7 @@ public class HypermediaLinkService {
         dtos.forEach(this::setSelfLink);
     }
 
-    Link buildCustomLink(Class<?> targetRes, String rel, String method) {
+    public Link buildCustomLink(Class<?> targetRes, String rel, String method) {
         return Link.fromUriBuilder(uriInfo.getBaseUriBuilder().path(targetRes))
                 .rel(rel)
                 .param("method", method)
@@ -171,7 +176,7 @@ public class HypermediaLinkService {
                 .build();
     }
 
-    Link buildCustomLink(Class<?> targetRes, String rel, String method, UUID id) {
+    public Link buildCustomLink(Class<?> targetRes, String rel, String method, UUID id) {
         return Link.fromUriBuilder(uriInfo.getBaseUriBuilder().path(targetRes).path(id.toString()))
                 .rel(rel)
                 .param("method", method)
