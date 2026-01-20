@@ -60,23 +60,7 @@ public class HypermediaLinkService {
         StringBuilder linkBuilder = new StringBuilder();
         linkBuilder.append("<").append(base);
 
-        boolean isTemplated = false;
-
-        if (queryParams != null && queryParams.length > 0) {
-            linkBuilder.append("{?").append(String.join(",", queryParams)).append("}");
-            isTemplated = true;
-        }
-
-        linkBuilder.append(">; ");
-        linkBuilder.append("method=\"GET\"; ");
-        linkBuilder.append("rel=\"").append(rel).append("\"; ");
-        linkBuilder.append("type=\"").append(type).append("\"");
-
-        if (isTemplated) {
-            linkBuilder.append("; templated=\"true\"");
-        }
-
-        return linkBuilder.toString();
+        return getCollectionLink(rel, type, linkBuilder, String.join(",", queryParams), queryParams);
     }
 
     public String buildCollectionLink(String... queryParams) {
@@ -221,14 +205,11 @@ public class HypermediaLinkService {
         String rel = "get" + getRelEntityName(pathClass);
         String type = getMediaType();
 
-        StringBuilder linkBuilder = new StringBuilder("<").append(collectionUriStr);
-
-        linkBuilder.append(">; ");
-        linkBuilder.append("method=\"GET\"; ");
-        linkBuilder.append("rel=\"").append(rel).append("\"; ");
-        linkBuilder.append("type=\"").append(type).append("\"");
-
-        return linkBuilder.toString();
+        return "<" + collectionUriStr +
+                ">; " +
+                "method=\"GET\"; " +
+                "rel=\"" + rel + "\"; " +
+                "type=\"" + type + "\"";
     }
 
     public Link buildSelfLinkSub(URI selfUri) {
@@ -309,21 +290,7 @@ public class HypermediaLinkService {
 
         StringBuilder linkBuilder = new StringBuilder("<").append(collectionUriStr);
 
-        boolean isTemplated = false;
-        if (queryParams != null && queryParams.length > 0) {
-            linkBuilder.append("{?").append(String.join(",", queryParams)).append("}");
-            isTemplated = true;
-        }
-        linkBuilder.append(">; ");
-        linkBuilder.append("method=\"GET\"; ");
-        linkBuilder.append("rel=\"").append(rel).append("\"; ");
-        linkBuilder.append("type=\"").append(type).append("\"");
-
-        if (isTemplated) {
-            linkBuilder.append("; templated=\"true\"");
-        }
-
-        return linkBuilder.toString();
+        return getCollectionLink(rel, type, linkBuilder, String.join(",", queryParams), queryParams);
     }
 
     public String buildCollectionLinkSub(URI collectionUri, UUID id, Class<?> pathClass, String... queryParams) {
@@ -359,5 +326,25 @@ public class HypermediaLinkService {
 
     String getRelEntityName(Class<?> pathClass) {
         return pathClass.getSimpleName().replace("Resource", "");
+    }
+
+    private String getCollectionLink(String rel, String type, StringBuilder linkBuilder, String join, String[] queryParams) {
+        boolean isTemplated = false;
+
+        if (queryParams != null && queryParams.length > 0) {
+            linkBuilder.append("{?").append(join).append("}");
+            isTemplated = true;
+        }
+
+        linkBuilder.append(">; ");
+        linkBuilder.append("method=\"GET\"; ");
+        linkBuilder.append("rel=\"").append(rel).append("\"; ");
+        linkBuilder.append("type=\"").append(type).append("\"");
+
+        if (isTemplated) {
+            linkBuilder.append("; templated=\"true\"");
+        }
+
+        return linkBuilder.toString();
     }
 }

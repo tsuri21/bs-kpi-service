@@ -146,7 +146,6 @@ public class KPIEntryResource {
     @Path("{eId}")
     @RolesAllowed({Role.ADMIN_ROLE, Role.TECH_USER_ROLE})
     public Response delete(
-            @PathParam("aId") UUID aId,
             @PathParam("eId") UUID eId) {
         entryUseCase.delete(new KPIEntryId(eId));
 

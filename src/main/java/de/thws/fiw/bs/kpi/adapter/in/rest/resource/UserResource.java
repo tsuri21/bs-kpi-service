@@ -92,18 +92,18 @@ public class UserResource {
 
         Response.ResponseBuilder builder = cachingUtil.getConditionalBuilder(request, users);
 
-        if (builder.build().getStatus() == Response.Status.OK.getStatusCode()) {
-            linkService.setSelfLinks(users);
-            Link[] pagination = linkService.buildPaginationLinks(userPage);
-            Link root = linkService.buildDispatcherLink();
-
-            return builder
-                    .links(root)
-                    .links(pagination)
-                    .header("X-Total-Count", userPage.totalElements())
-                    .build();
+        if (builder.build().getStatus() != Response.Status.OK.getStatusCode()) {
+            return builder.build();
         }
-        return builder.build();
+        linkService.setSelfLinks(users);
+        Link[] pagination = linkService.buildPaginationLinks(userPage);
+        Link root = linkService.buildDispatcherLink();
+
+        return builder
+                .links(root)
+                .links(pagination)
+                .header("X-Total-Count", userPage.totalElements())
+                .build();
     }
 
     @POST
