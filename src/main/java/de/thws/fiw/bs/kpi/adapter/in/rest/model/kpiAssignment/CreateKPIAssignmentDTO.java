@@ -5,15 +5,16 @@ import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 
 public class CreateKPIAssignmentDTO {
-    @NotNull()
+
+    @NotNull(message = "Threshold for green must not be null")
     private double green;
 
-    @NotNull
+    @NotNull(message = "Threshold for yellow must not be null")
     private double yellow;
 
     private Double targetValue;
 
-    @NotNull()
+    @NotNull(message = "Id for KPI must not be null")
     private UUID kpiId;
 
     public CreateKPIAssignmentDTO() {

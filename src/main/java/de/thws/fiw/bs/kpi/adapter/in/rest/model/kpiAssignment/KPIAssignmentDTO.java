@@ -9,19 +9,18 @@ import java.util.UUID;
 
 public class KPIAssignmentDTO extends AbstractDTO {
 
-
-    @NotNull()
+    @NotNull(message = "Threshold for green must not be null")
     private double green;
 
-    @NotNull
+    @NotNull(message = "Threshold for yellow must not be null")
     private double yellow;
 
     private Double targetValue;
 
-    @NotNull()
+    @NotNull(message = "Id for KPI must not be null")
     private UUID kpiId;
 
-    @NotNull()
+    @NotNull(message = "Id for Project must not be null")
     private UUID projectId;
 
     public KPIAssignmentDTO() {
