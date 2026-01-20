@@ -2,6 +2,7 @@ package de.thws.fiw.bs.kpi.adapter.in.rest.resource;
 
 import de.thws.fiw.bs.kpi.adapter.in.rest.mapper.UserApiMapper;
 import de.thws.fiw.bs.kpi.adapter.in.rest.model.user.UserResponseDTO;
+import de.thws.fiw.bs.kpi.adapter.in.rest.util.CachingUtil;
 import de.thws.fiw.bs.kpi.adapter.in.rest.util.HypermediaLinkService;
 import de.thws.fiw.bs.kpi.adapter.in.rest.util.UserContext;
 import de.thws.fiw.bs.kpi.application.domain.model.user.Role;
@@ -16,10 +17,9 @@ import jakarta.inject.Inject;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.Link;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.*;
 import org.eclipse.microprofile.jwt.JsonWebToken;
+import org.jboss.resteasy.annotations.cache.Cache;
 
 import java.util.List;
 import java.util.UUID;
@@ -43,8 +43,12 @@ public class UserResource {
     @Inject
     HypermediaLinkService linkService;
 
+    @Inject
+    CachingUtil cachingUtil;
+
     @GET
     @Path("me")
+    @Cache(maxAge = 3600)
     @Produces(MediaType.APPLICATION_JSON)
     public Response getCurrent() {
         String id = jwt.getSubject();
@@ -56,6 +60,7 @@ public class UserResource {
 
     @GET
     @Path("{id}")
+    @Cache(maxAge = 3600)
     @Produces(MediaType.APPLICATION_JSON)
     public Response getById(@NotNull @PathParam("id") UUID id) {
         checkAuthorization(id);
@@ -66,22 +71,28 @@ public class UserResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @RolesAllowed({Role.ADMIN_ROLE})
-    public Response getAll(@Positive @DefaultValue("1") @QueryParam("page") int page) {
+    public Response getAll(@Positive @DefaultValue("1") @QueryParam("page") int page,
+                           @Context Request request) {
         final int PAGE_SIZE = 10;
 
         PageRequest pageRequest = new PageRequest(page, PAGE_SIZE);
         Page<User> userPage = userManagementUseCase.readAll(pageRequest);
         List<UserResponseDTO> users = mapper.toApiModels(userPage.content());
 
-        linkService.setSelfLinks(users);
-        Link[] pagination = linkService.buildPaginationLinks(userPage);
-        Link root = linkService.buildDispatcherLink();
+        Response.ResponseBuilder builder = cachingUtil.getConditionalBuilder(request, users);
 
-        return Response.ok(users)
-                .links(root)
-                .links(pagination)
-                .header("X-Total-Count", userPage.totalElements())
-                .build();
+        if (builder.build().getStatus() == Response.Status.OK.getStatusCode()) {
+            linkService.setSelfLinks(users);
+            Link[] pagination = linkService.buildPaginationLinks(userPage);
+            Link root = linkService.buildDispatcherLink();
+
+            return builder
+                    .links(root)
+                    .links(pagination)
+                    .header("X-Total-Count", userPage.totalElements())
+                    .build();
+        }
+        return builder.build();
     }
 
     @DELETE
@@ -113,6 +124,7 @@ public class UserResource {
     }
 
     private Response createGetResponse(UUID id) {
+
         UserId userId = new UserId(id);
         User user = userManagementUseCase.readById(userId).orElseThrow(NotFoundException::new);
         UserResponseDTO userDto = mapper.toApiModel(user);
@@ -122,13 +134,13 @@ public class UserResource {
         Link delete = linkService.buildDeleteLink(id);
         Link root = linkService.buildDispatcherLink();
 
-        Response.ResponseBuilder response = Response.noContent().links(root, self, delete);
+        Response.ResponseBuilder response = Response.ok(userDto);
 
         if (userContext.isAdmin()) {
             response.header("Link", linkService.buildCollectionLink());
         }
 
-        return Response.ok(userDto)
+        return response
                 .links(self, delete, root)
                 .build();
     }

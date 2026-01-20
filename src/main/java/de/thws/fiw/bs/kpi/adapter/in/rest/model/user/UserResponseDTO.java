@@ -2,6 +2,7 @@ package de.thws.fiw.bs.kpi.adapter.in.rest.model.user;
 
 import de.thws.fiw.bs.kpi.adapter.in.rest.model.AbstractDTO;
 
+import java.util.Objects;
 import java.util.UUID;
 
 public class UserResponseDTO extends AbstractDTO {
@@ -32,5 +33,17 @@ public class UserResponseDTO extends AbstractDTO {
 
     public void setRole(RoleDTO role) {
         this.role = role;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        UserResponseDTO that = (UserResponseDTO) o;
+        return Objects.equals(username, that.username) && role == that.role;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(username, role);
     }
 }

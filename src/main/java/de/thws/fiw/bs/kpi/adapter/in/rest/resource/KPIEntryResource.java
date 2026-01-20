@@ -18,6 +18,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.*;
+import org.jboss.resteasy.annotations.cache.Cache;
 
 import java.net.URI;
 import java.time.Instant;
@@ -44,29 +45,25 @@ public class KPIEntryResource {
 
     @GET
     @Path("{eId}")
+    @Cache(maxAge = 3600)
     @Produces(MediaType.APPLICATION_JSON)
     public Response getById(
-            @PathParam("eId") UUID eId,
-            @Context Request request) {
+            @PathParam("eId") UUID eId) {
 
         KPIEntryId id = new KPIEntryId(eId);
         KPIEntry entry = entryUseCase.readById(id).orElseThrow(NotFoundException::new);
         KPIEntryDTO dto = mapper.toApiModel(entry);
-        Response.ResponseBuilder builder = cachingUtil.getConditionalBuilder(request, dto);
 
-        if (builder.build().getStatus() == Response.Status.OK.getStatusCode()) {
-            URI selfUri = uriInfo.getAbsolutePath();
-            linkService.setSelfLinkSub(dto, selfUri);
-            Link self = linkService.buildSelfLinkSub(selfUri);
-            Link delete = linkService.buildDeleteLinkSub(selfUri, KPIEntryResource.class);
-            String allEntries = linkService.buildCollectionLinkSub(selfUri, KPIEntryResource.class);
+        URI selfUri = uriInfo.getAbsolutePath();
+        linkService.setSelfLinkSub(dto, selfUri);
+        Link self = linkService.buildSelfLinkSub(selfUri);
+        Link delete = linkService.buildDeleteLinkSub(selfUri, KPIEntryResource.class);
+        String allEntries = linkService.buildCollectionLinkSub(selfUri, KPIEntryResource.class);
 
-            return builder
-                    .links(self, delete)
-                    .header("Link", allEntries)
-                    .build();
-        }
-        return builder.build();
+        return Response.ok(dto)
+                .links(self, delete)
+                .header("Link", allEntries)
+                .build();
     }
 
     @GET
