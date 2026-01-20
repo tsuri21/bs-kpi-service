@@ -9,7 +9,7 @@ import jakarta.ws.rs.core.Response;
 @RequestScoped
 public class CachingUtil {
 
-    public static Response.ResponseBuilder getConditionalBuilder(Request request, Object dto) {
+    public Response.ResponseBuilder getConditionalBuilder(Request request, Object dto) {
         EntityTag etag = new EntityTag(Integer.toHexString(dto.hashCode()));
 
         Response.ResponseBuilder builder = request.evaluatePreconditions(etag);

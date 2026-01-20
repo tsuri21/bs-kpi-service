@@ -1,16 +1,11 @@
 package de.thws.fiw.bs.kpi.adapter.in.rest.resource;
 
-import de.thws.fiw.bs.kpi.adapter.in.rest.mapper.RoleApiMapper;
-import de.thws.fiw.bs.kpi.adapter.in.rest.model.user.CreateUserDTO;
 import de.thws.fiw.bs.kpi.adapter.in.rest.model.authentication.TokenResponseDTO;
 import de.thws.fiw.bs.kpi.adapter.in.rest.util.HypermediaLinkService;
-import de.thws.fiw.bs.kpi.adapter.in.rest.util.UserContext;
-import de.thws.fiw.bs.kpi.application.domain.model.user.UserId;
 import de.thws.fiw.bs.kpi.application.domain.model.user.Username;
 import de.thws.fiw.bs.kpi.application.port.in.AuthenticationUseCase;
 import jakarta.annotation.security.PermitAll;
 import jakarta.inject.Inject;
-import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Link;
 import jakarta.ws.rs.core.MediaType;
@@ -28,12 +23,6 @@ public class AuthenticationResource {
 
     @Inject
     HypermediaLinkService linkService;
-
-    @Inject
-    UserContext userContext;
-
-    @Inject
-    RoleApiMapper mapper;
 
     @POST
     @Path("/login")
@@ -65,31 +54,9 @@ public class AuthenticationResource {
 
         String token = authenticationUseCase.login(new Username(username), password);
 
-        // TODO: link on /users/me
+        Link currentUser = linkService.buildCustomLink(UserResource.class, "getCurrent", "getCurrentUser", "GET");
         Link root = linkService.buildDispatcherLink();
-        Response.ResponseBuilder response = Response.ok(new TokenResponseDTO(token)).links(root);
 
-        if (userContext.isAdmin()) {
-            response.header("Link", linkService.buildCollectionLink());
-        }
-
-        return response.build();
-    }
-
-    @POST
-    @Path("/register")
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response register(@Valid CreateUserDTO createUserDto) {
-        UserId id = authenticationUseCase.register(
-                new Username(createUserDto.getUsername()),
-                createUserDto.getPassword(),
-                mapper.toDomainModel(createUserDto.getRole())
-        );
-
-        // TODO: login link
-        Link self = linkService.buildSelfLink(UserResource.class, id.value());
-        return Response.created(linkService.buildLocationUri(UserResource.class, id.value()))
-                .links(self)
-                .build();
+        return Response.ok(new TokenResponseDTO(token)).links(root, currentUser).build();
     }
 }

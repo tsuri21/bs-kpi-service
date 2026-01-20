@@ -9,9 +9,11 @@ import de.thws.fiw.bs.kpi.adapter.in.rest.util.HypermediaLinkService;
 import de.thws.fiw.bs.kpi.application.domain.model.kpi.KPI;
 import de.thws.fiw.bs.kpi.application.domain.model.kpi.KPIId;
 import de.thws.fiw.bs.kpi.application.domain.model.Name;
+import de.thws.fiw.bs.kpi.application.domain.model.user.Role;
 import de.thws.fiw.bs.kpi.application.port.Page;
 import de.thws.fiw.bs.kpi.application.port.PageRequest;
 import de.thws.fiw.bs.kpi.application.port.in.KPIUseCase;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
@@ -22,6 +24,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Path("kpis")
+@RolesAllowed(Role.ADMIN_ROLE)
 public class KPIResource {
 
     @Inject
@@ -78,12 +81,13 @@ public class KPIResource {
 
         if (builder.build().getStatus() == Response.Status.OK.getStatusCode()) {
             linkService.setSelfLinks(kpis);
+            Link root = linkService.buildDispatcherLink();
             Link create = linkService.buildCreateLink();
-            Link desc = linkService.buildDescriptionLink();
+            // Link desc = linkService.buildDescriptionLink();
             Link[] pagination = linkService.buildPaginationLinks(kpiPage);
 
             return builder
-                    .links(create, desc)
+                    .links(root, create)
                     .links(pagination)
                     .header("X-Total-Count", kpiPage.totalElements())
                     .build();

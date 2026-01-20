@@ -1,6 +1,8 @@
 package de.thws.fiw.bs.kpi.adapter.in.rest.resource;
 
+import de.thws.fiw.bs.kpi.adapter.in.rest.mapper.RoleApiMapper;
 import de.thws.fiw.bs.kpi.adapter.in.rest.mapper.UserApiMapper;
+import de.thws.fiw.bs.kpi.adapter.in.rest.model.user.CreateUserDTO;
 import de.thws.fiw.bs.kpi.adapter.in.rest.model.user.UserResponseDTO;
 import de.thws.fiw.bs.kpi.adapter.in.rest.util.CachingUtil;
 import de.thws.fiw.bs.kpi.adapter.in.rest.util.HypermediaLinkService;
@@ -8,12 +10,16 @@ import de.thws.fiw.bs.kpi.adapter.in.rest.util.UserContext;
 import de.thws.fiw.bs.kpi.application.domain.model.user.Role;
 import de.thws.fiw.bs.kpi.application.domain.model.user.User;
 import de.thws.fiw.bs.kpi.application.domain.model.user.UserId;
+import de.thws.fiw.bs.kpi.application.domain.model.user.Username;
 import de.thws.fiw.bs.kpi.application.port.Page;
 import de.thws.fiw.bs.kpi.application.port.PageRequest;
+import de.thws.fiw.bs.kpi.application.port.in.AuthenticationUseCase;
 import de.thws.fiw.bs.kpi.application.port.in.UserManagementUseCase;
 import io.quarkus.security.Authenticated;
+import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.ws.rs.*;
@@ -32,10 +38,16 @@ public class UserResource {
     UserManagementUseCase userManagementUseCase;
 
     @Inject
+    AuthenticationUseCase authenticationUseCase;
+
+    @Inject
     JsonWebToken jwt;
 
     @Inject
     UserContext userContext;
+
+    @Inject
+    RoleApiMapper roleMapper;
 
     @Inject
     UserApiMapper mapper;
@@ -52,7 +64,6 @@ public class UserResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getCurrent() {
         String id = jwt.getSubject();
-        System.out.println(id);
         UUID uuid = UUID.fromString(id);
 
         return createGetResponse(uuid);
@@ -70,7 +81,7 @@ public class UserResource {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @RolesAllowed({Role.ADMIN_ROLE})
+    @RolesAllowed(Role.ADMIN_ROLE)
     public Response getAll(@Positive @DefaultValue("1") @QueryParam("page") int page,
                            @Context Request request) {
         final int PAGE_SIZE = 10;
@@ -93,6 +104,22 @@ public class UserResource {
                     .build();
         }
         return builder.build();
+    }
+
+    @POST
+    @PermitAll
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response create(@Valid CreateUserDTO createUserDto) {
+        UserId id = authenticationUseCase.register(
+                new Username(createUserDto.getUsername()),
+                createUserDto.getPassword(),
+                roleMapper.toDomainModel(createUserDto.getRole())
+        );
+
+        Link login = linkService.buildCustomLink(AuthenticationResource.class, "login", "login", "GET");
+        return Response.created(linkService.buildLocationUri(UserResource.class, id.value()))
+                .links(login)
+                .build();
     }
 
     @DELETE
