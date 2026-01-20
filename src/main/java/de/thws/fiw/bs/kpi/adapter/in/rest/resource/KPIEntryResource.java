@@ -5,13 +5,17 @@ import de.thws.fiw.bs.kpi.adapter.in.rest.model.kpiEntry.CreateKPIEntryDTO;
 import de.thws.fiw.bs.kpi.adapter.in.rest.model.kpiEntry.KPIEntryDTO;
 import de.thws.fiw.bs.kpi.adapter.in.rest.util.CachingUtil;
 import de.thws.fiw.bs.kpi.adapter.in.rest.util.HypermediaLinkService;
+import de.thws.fiw.bs.kpi.adapter.in.rest.util.UserContext;
 import de.thws.fiw.bs.kpi.application.domain.model.kpiAssignment.KPIAssignment;
 import de.thws.fiw.bs.kpi.application.domain.model.kpiAssignment.KPIAssignmentId;
 import de.thws.fiw.bs.kpi.application.domain.model.kpiEntry.KPIEntry;
 import de.thws.fiw.bs.kpi.application.domain.model.kpiEntry.KPIEntryId;
+import de.thws.fiw.bs.kpi.application.domain.model.user.Role;
 import de.thws.fiw.bs.kpi.application.port.Page;
 import de.thws.fiw.bs.kpi.application.port.PageRequest;
 import de.thws.fiw.bs.kpi.application.port.in.KPIEntryUseCase;
+import io.quarkus.security.Authenticated;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -26,6 +30,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RequestScoped
+@Authenticated
 public class KPIEntryResource {
 
     @Inject
@@ -39,6 +44,9 @@ public class KPIEntryResource {
 
     @Inject
     CachingUtil cachingUtil;
+
+    @Inject
+    UserContext userContext;
 
     @Context
     UriInfo uriInfo;
@@ -54,14 +62,20 @@ public class KPIEntryResource {
         KPIEntry entry = entryUseCase.readById(id).orElseThrow(NotFoundException::new);
         KPIEntryDTO dto = mapper.toApiModel(entry);
 
+        Response.ResponseBuilder builder = Response.ok(dto);
+
         URI selfUri = uriInfo.getAbsolutePath();
+
+        if (userContext.isAdmin()) {
+            builder.links(linkService.buildDeleteLinkSub(selfUri, KPIEntryResource.class));
+        }
+
         linkService.setSelfLinkSub(dto, selfUri);
         Link self = linkService.buildSelfLinkSub(selfUri);
-        Link delete = linkService.buildDeleteLinkSub(selfUri, KPIEntryResource.class);
         String allEntries = linkService.buildCollectionLinkSub(selfUri, KPIEntryResource.class);
 
-        return Response.ok(dto)
-                .links(self, delete)
+        return builder
+                .links(self)
                 .header("Link", allEntries)
                 .build();
     }
@@ -69,7 +83,6 @@ public class KPIEntryResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAll(
-            @PathParam("pId") UUID pId,
             @PathParam("aId") UUID aId,
             @QueryParam("from") String from,
             @QueryParam("to") String to,
@@ -85,24 +98,29 @@ public class KPIEntryResource {
         List<KPIEntryDTO> dtos = mapper.toApiModels(entryPage.content());
         Response.ResponseBuilder builder = cachingUtil.getConditionalBuilder(request, dtos);
 
-        if (builder.build().getStatus() == Response.Status.OK.getStatusCode()) {
-            URI selfUri = uriInfo.getAbsolutePath();
-            linkService.setSelfLinksSub(dtos, selfUri);
-            Link create = linkService.buildCreateLinkSub(selfUri, KPIEntry.class);
-            Link[] pagination = linkService.buildPaginationLinks(entryPage);
-            String assignment = linkService.buildSelfLinkSubLayerBack(selfUri, KPIAssignment.class);
-
-            return builder
-                    .links(create)
-                    .links(pagination)
-                    .header("Link", assignment)
-                    .header("X-Total-Count", entryPage.totalElements())
-                    .build();
+        if (builder.build().getStatus() != Response.Status.OK.getStatusCode()) {
+            return builder.build();
         }
-        return builder.build();
+
+        URI selfUri = uriInfo.getAbsolutePath();
+
+        if (userContext.isAdmin()) {
+            builder.links(linkService.buildCreateLinkSub(selfUri, KPIEntry.class));
+        }
+
+        linkService.setSelfLinksSub(dtos, selfUri);
+        Link[] pagination = linkService.buildPaginationLinks(entryPage);
+        String assignment = linkService.buildSelfLinkSubLayerBack(selfUri, KPIAssignment.class);
+
+        return builder
+                .links(pagination)
+                .header("Link", assignment)
+                .header("X-Total-Count", entryPage.totalElements())
+                .build();
     }
 
     @POST
+    @RolesAllowed({Role.ADMIN_ROLE, Role.TECH_USER_ROLE})
     @Consumes(MediaType.APPLICATION_JSON)
     public Response create(
             @PathParam("aId") UUID aId,
@@ -126,6 +144,7 @@ public class KPIEntryResource {
 
     @DELETE
     @Path("{eId}")
+    @RolesAllowed({Role.ADMIN_ROLE, Role.TECH_USER_ROLE})
     public Response delete(
             @PathParam("aId") UUID aId,
             @PathParam("eId") UUID eId) {

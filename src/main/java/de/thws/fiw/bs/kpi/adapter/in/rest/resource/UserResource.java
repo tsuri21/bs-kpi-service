@@ -81,7 +81,7 @@ public class UserResource {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @RolesAllowed({Role.ADMIN_ROLE})
+    @RolesAllowed(Role.ADMIN_ROLE)
     public Response getAll(@Positive @DefaultValue("1") @QueryParam("page") int page,
                            @Context Request request) {
         final int PAGE_SIZE = 10;

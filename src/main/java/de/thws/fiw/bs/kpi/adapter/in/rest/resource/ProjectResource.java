@@ -7,29 +7,32 @@ import de.thws.fiw.bs.kpi.adapter.in.rest.model.project.ProjectDTO;
 import de.thws.fiw.bs.kpi.adapter.in.rest.model.project.ProjectEvaluationResultDTO;
 import de.thws.fiw.bs.kpi.adapter.in.rest.util.CachingUtil;
 import de.thws.fiw.bs.kpi.adapter.in.rest.util.HypermediaLinkService;
+import de.thws.fiw.bs.kpi.adapter.in.rest.util.UserContext;
 import de.thws.fiw.bs.kpi.application.domain.model.Name;
 import de.thws.fiw.bs.kpi.application.domain.model.project.Project;
 import de.thws.fiw.bs.kpi.application.domain.model.project.ProjectEvaluationResult;
 import de.thws.fiw.bs.kpi.application.domain.model.project.ProjectId;
 import de.thws.fiw.bs.kpi.application.domain.model.project.RepoUrl;
+import de.thws.fiw.bs.kpi.application.domain.model.user.Role;
 import de.thws.fiw.bs.kpi.application.port.Page;
 import de.thws.fiw.bs.kpi.application.port.PageRequest;
 import de.thws.fiw.bs.kpi.application.port.in.EvaluationUseCase;
 import de.thws.fiw.bs.kpi.application.port.in.ProjectUseCase;
+import io.quarkus.security.Authenticated;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.container.ResourceContext;
 import jakarta.ws.rs.core.*;
-import org.jboss.resteasy.annotations.cache.NoCache;
 
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
 @Path("projects")
+@Authenticated
 public class ProjectResource {
 
     @Inject
@@ -49,6 +52,9 @@ public class ProjectResource {
 
     @Inject
     CachingUtil cachingUtil;
+
+    @Inject
+    UserContext userContext;
 
     @Context
     ResourceContext resourceContext;
@@ -73,24 +79,28 @@ public class ProjectResource {
 
         Response.ResponseBuilder builder = cachingUtil.getConditionalBuilder(request, projectDTO);
 
-        if (builder.build().getStatus() == Response.Status.OK.getStatusCode()) {
-            linkService.setSelfLink(projectDTO);
-            Link self = linkService.buildSelfLink(id);
-            Link delete = linkService.buildDeleteLink(id);
-            Link update = linkService.buildUpdateLink(id);
-            URI selfUri = uriInfo.getAbsolutePath();
-            URI assignments = UriBuilder.fromUri(selfUri).path("assignments/1").build();
-            String allAssignments = linkService.buildCollectionLinkSub(assignments, KPIAssignmentResource.class, "kpiId");
-            String allProjects = linkService.buildCollectionLink("name", "repoUrl");
-            Link evalutaion = linkService.buildEvaluationLinkSub(selfUri, ProjectResource.class);
-
-            return builder
-                    .links(self, delete, update, evalutaion)
-                    .header("Link", allProjects)
-                    .header("Link", allAssignments)
-                    .build();
+        if (builder.build().getStatus() != Response.Status.OK.getStatusCode()) {
+            return builder.build();
         }
-        return builder.build();
+
+        if (userContext.isAdmin()) {
+            builder.links(linkService.buildDeleteLink(id));
+            builder.links(linkService.buildUpdateLink(id));
+        }
+
+        linkService.setSelfLink(projectDTO);
+        Link self = linkService.buildSelfLink(id);
+        URI selfUri = uriInfo.getAbsolutePath();
+        URI assignments = UriBuilder.fromUri(selfUri).path("assignments/1").build();
+        String allAssignments = linkService.buildCollectionLinkSub(assignments, KPIAssignmentResource.class, "kpiId");
+        String allProjects = linkService.buildCollectionLink("name", "repoUrl");
+        Link evaluation = linkService.buildEvaluationLinkSub(selfUri, ProjectResource.class);
+
+        return builder
+                .links(self, evaluation)
+                .header("Link", allProjects)
+                .header("Link", allAssignments)
+                .build();
     }
 
     @GET
@@ -108,22 +118,28 @@ public class ProjectResource {
 
         Response.ResponseBuilder builder = cachingUtil.getConditionalBuilder(request, projects);
 
-        if (builder.build().getStatus() == Response.Status.OK.getStatusCode()) {
-            linkService.setSelfLinks(projects);
-            Link create = linkService.buildCreateLink();
-            Link desc = linkService.buildDescriptionLink();
-            Link[] pagination = linkService.buildPaginationLinks(projectPage);
-
-            return builder
-                    .links(create, desc)
-                    .links(pagination)
-                    .header("X-Total-Count", projectPage.totalElements())
-                    .build();
+        if (builder.build().getStatus() != Response.Status.OK.getStatusCode()) {
+            return builder.build();
         }
-        return builder.build();
+
+        if (userContext.isAdmin()) {
+            builder.links(linkService.buildCreateLink());
+        }
+
+        linkService.setSelfLinks(projects);
+        Link root = linkService.buildDispatcherLink();
+        // Link desc = linkService.buildDescriptionLink();
+        Link[] pagination = linkService.buildPaginationLinks(projectPage);
+
+        return builder
+                .links(root)
+                .links(pagination)
+                .header("X-Total-Count", projectPage.totalElements())
+                .build();
     }
 
     @POST
+    @RolesAllowed(Role.ADMIN_ROLE)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response create(@Valid CreateProjectDTO projectDto) {
         Project project = mapper.toDomainModelByCreate(projectDto);
@@ -139,6 +155,7 @@ public class ProjectResource {
 
     @PUT
     @Path("{id}")
+    @RolesAllowed(Role.ADMIN_ROLE)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response update(
             @PathParam("id") UUID id,
@@ -164,6 +181,7 @@ public class ProjectResource {
 
     @DELETE
     @Path("{id}")
+    @RolesAllowed(Role.ADMIN_ROLE)
     public Response delete(@PathParam("id") UUID id) {
         projectUseCase.delete(new ProjectId(id));
 
