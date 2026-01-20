@@ -27,14 +27,10 @@ public class RootResource {
 
         if (userContext.isAuthenticated()) {
             String getAllProjects = linkService.buildCollectionLink(ProjectResource.class);
-            String getAllKPIs = linkService.buildCollectionLink(KPIResource.class);
             Link getCurrentUser = linkService.buildCustomLink(UserResource.class, "getCurrent", "getCurrentUser", "GET");
 
             response.links(getCurrentUser);
             response.header("Link", getAllProjects);
-            response.header("Link", getAllKPIs);
-            System.out.println(getAllProjects);
-            System.out.println(getAllKPIs);
 
         } else {
             Link login = linkService.buildCustomLink(AuthenticationResource.class, "login", "login", "POST");
@@ -43,7 +39,9 @@ public class RootResource {
         }
 
         if (userContext.isAdmin()) {
+            String getAllKPIs = linkService.buildCollectionLink(KPIResource.class);
             String getAllUsers = linkService.buildCollectionLink(UserResource.class);
+            response.header("Link", getAllKPIs);
             response.header("Link", getAllUsers);
         }
 
