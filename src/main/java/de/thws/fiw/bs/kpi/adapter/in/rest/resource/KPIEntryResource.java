@@ -1,6 +1,6 @@
 package de.thws.fiw.bs.kpi.adapter.in.rest.resource;
 
-import de.thws.fiw.bs.kpi.adapter.in.rest.mapper.KPIEntryAPIMapper;
+import de.thws.fiw.bs.kpi.adapter.in.rest.mapper.KPIEntryApiMapper;
 import de.thws.fiw.bs.kpi.adapter.in.rest.model.kpiEntry.CreateKPIEntryDTO;
 import de.thws.fiw.bs.kpi.adapter.in.rest.model.kpiEntry.KPIEntryDTO;
 import de.thws.fiw.bs.kpi.adapter.in.rest.util.CachingUtil;
@@ -37,7 +37,7 @@ public class KPIEntryResource {
     KPIEntryUseCase entryUseCase;
 
     @Inject
-    KPIEntryAPIMapper mapper;
+    KPIEntryApiMapper mapper;
 
     @Inject
     HypermediaLinkService linkService;

@@ -5,17 +5,18 @@ import de.thws.fiw.bs.kpi.adapter.in.rest.model.kpiEntry.KPIEntryDTO;
 import de.thws.fiw.bs.kpi.application.domain.model.kpiAssignment.KPIAssignmentId;
 import de.thws.fiw.bs.kpi.application.domain.model.kpiEntry.KPIEntry;
 import de.thws.fiw.bs.kpi.application.domain.model.kpiEntry.KPIEntryId;
+import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
 import java.time.Clock;
 import java.time.Instant;
-import java.time.ZoneOffset;
 import java.util.UUID;
 
 @Singleton
-public class KPIEntryAPIMapper implements ApiMapper<KPIEntry, KPIEntryDTO> {
+public class KPIEntryApiMapper implements ApiMapper<KPIEntry, KPIEntryDTO> {
 
-    private static final Clock FIXED_CLOCK = Clock.fixed(Instant.parse("2027-01-01T10:00:00Z"), ZoneOffset.UTC);
+    @Inject
+    Clock clock;
 
     @Override
     public KPIEntryDTO toApiModel(KPIEntry entry) {
@@ -34,7 +35,7 @@ public class KPIEntryAPIMapper implements ApiMapper<KPIEntry, KPIEntryDTO> {
                 new KPIAssignmentId(dto.getKpiAssignmentId()),
                 dto.getTimestamp(),
                 dto.getMeasurement(),
-                FIXED_CLOCK
+                clock
         );
     }
 
@@ -44,7 +45,7 @@ public class KPIEntryAPIMapper implements ApiMapper<KPIEntry, KPIEntryDTO> {
                 new KPIAssignmentId(aId),
                 Instant.now(),
                 dto.getMeasurement(),
-                FIXED_CLOCK
+                clock
         );
     }
 }

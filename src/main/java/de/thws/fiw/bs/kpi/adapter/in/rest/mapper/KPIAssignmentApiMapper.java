@@ -10,26 +10,27 @@ import de.thws.fiw.bs.kpi.application.port.in.KPIAssignmentCommand;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
-import java.util.List;
 import java.util.UUID;
 
 @Singleton
-public class KPIAssignmentAPIMapper {
+public class KPIAssignmentApiMapper implements ToDomainMapper<KPIAssignmentCommand, KPIAssignmentDTO>, ToApiMapper<KPIAssignment, KPIAssignmentDTO> {
 
     @Inject
-    KPIApiMapper mapper;
+    KPIApiMapper kpiApiMapper;
 
+    @Override
     public KPIAssignmentDTO toApiModel(KPIAssignment kpiAssignment) {
         return new KPIAssignmentDTO(
                 kpiAssignment.getId().value(),
                 kpiAssignment.getThresholds().getGreen(),
                 kpiAssignment.getThresholds().getYellow(),
                 kpiAssignment.getThresholds().getTargetValue(),
-                mapper.toApiModel(kpiAssignment.getKpi()).getId(),
+                kpiApiMapper.toApiModel(kpiAssignment.getKpi()).getId(),
                 kpiAssignment.getProjectId().value()
         );
     }
 
+    @Override
     public KPIAssignmentCommand toDomainModel(KPIAssignmentDTO dto) {
         return new KPIAssignmentCommand(
                 new KPIAssignmentId(dto.getId()),
@@ -50,17 +51,5 @@ public class KPIAssignmentAPIMapper {
                 dto.getYellow(),
                 dto.getTargetValue()
         );
-    }
-
-    public List<KPIAssignmentDTO> toApiModels(List<KPIAssignment> domains) {
-        return domains == null ? List.of() : domains.stream()
-                .map(this::toApiModel)
-                .toList();
-    }
-
-    public List<KPIAssignmentCommand> toDomainModels(List<KPIAssignmentDTO> dtos) {
-        return dtos == null ? List.of() : dtos.stream()
-                .map(this::toDomainModel)
-                .toList();
     }
 }

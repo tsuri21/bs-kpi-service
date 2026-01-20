@@ -1,7 +1,7 @@
 package de.thws.fiw.bs.kpi.adapter.in.rest.resource;
 
 import de.thws.fiw.bs.kpi.adapter.in.rest.mapper.KPIApiMapper;
-import de.thws.fiw.bs.kpi.adapter.in.rest.mapper.KPIAssignmentAPIMapper;
+import de.thws.fiw.bs.kpi.adapter.in.rest.mapper.KPIAssignmentApiMapper;
 import de.thws.fiw.bs.kpi.adapter.in.rest.mapper.KPIEvaluationResultApiMapper;
 import de.thws.fiw.bs.kpi.adapter.in.rest.model.kpi.KPIDTO;
 import de.thws.fiw.bs.kpi.adapter.in.rest.model.kpi.KPIEvaluationResultDTO;
@@ -50,7 +50,7 @@ public class KPIAssignmentResource {
     KPIUseCase kpiUseCase;
 
     @Inject
-    KPIAssignmentAPIMapper mapper;
+    KPIAssignmentApiMapper mapper;
 
     @Inject
     KPIApiMapper kpiMapper;
