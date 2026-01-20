@@ -4,6 +4,7 @@ import de.thws.fiw.bs.kpi.adapter.in.rest.model.AbstractDTO;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
+import java.util.Objects;
 import java.util.UUID;
 
 public class KPIDTO extends AbstractDTO {
@@ -37,5 +38,17 @@ public class KPIDTO extends AbstractDTO {
 
     public void setDestination(TargetDestinationDTO destination) {
         this.destination = destination;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        KPIDTO kpidto = (KPIDTO) o;
+        return Objects.equals(name, kpidto.name) && destination == kpidto.destination;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, destination);
     }
 }
