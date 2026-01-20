@@ -5,12 +5,16 @@ import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.SecurityContext;
 
-
 @RequestScoped
 public class UserContext {
 
     @Inject
     SecurityContext securityContext;
+
+    public boolean isAuthenticated() {
+        System.out.println(securityContext.getUserPrincipal());
+        return securityContext.getUserPrincipal() != null;
+    }
 
     public boolean isAdmin() {
         return securityContext.isUserInRole(Role.ADMIN_ROLE);
