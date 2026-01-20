@@ -123,9 +123,10 @@ public class KPIResource {
         KPI currentKpi = kpiUseCase.readById(new KPIId(id)).orElseThrow(NotFoundException::new);
         cachingUtil.checkPreconditions(request, mapper.toApiModel(currentKpi));
 
-        EntityTag newEtag = new EntityTag(Integer.toHexString(kpiDto.hashCode()));
-
         kpiUseCase.updateName(new KPIId(id), new Name(kpiDto.getName()));
+
+        KPI newKpi = kpiUseCase.readById(new KPIId(id)).orElseThrow(NotFoundException::new);
+        EntityTag newEtag = new EntityTag(Integer.toHexString(mapper.toApiModel(newKpi).hashCode()));
 
         return Response.noContent()
                 .tag(newEtag)
