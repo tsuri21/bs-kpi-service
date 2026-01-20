@@ -12,7 +12,6 @@ public class UserContext {
     SecurityContext securityContext;
 
     public boolean isAuthenticated() {
-        System.out.println(securityContext.getUserPrincipal());
         return securityContext.getUserPrincipal() != null;
     }
 
