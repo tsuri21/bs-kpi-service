@@ -226,6 +226,7 @@ public class HypermediaLinkService {
     public Link buildSelfLinkSub(URI selfUri) {
         return Link.fromUri(selfUri)
                 .rel("self")
+                .param("method", "GET")
                 .type(getMediaType())
                 .build();
     }
@@ -237,6 +238,7 @@ public class HypermediaLinkService {
 
         return Link.fromUri(selfUri)
                 .rel("self")
+                .param("method", "GET")
                 .type(getMediaType())
                 .build();
     }
@@ -248,6 +250,7 @@ public class HypermediaLinkService {
 
         return Link.fromUri(evaluationUri)
                 .rel("evaluate" + getRelEntityName(pathClass))
+                .param("method", "GET")
                 .type(getMediaType())
                 .build();
     }
