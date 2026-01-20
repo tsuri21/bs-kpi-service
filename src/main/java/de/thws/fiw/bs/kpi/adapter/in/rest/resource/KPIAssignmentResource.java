@@ -252,15 +252,16 @@ public class KPIAssignmentResource {
         kpiAssignmentUseCase.delete(new KPIAssignmentId(aId));
 
         URI selfUri = uriInfo.getAbsolutePath();
+
         return Response.noContent()
                 .header("Link", linkService.buildCollectionLinkSub(selfUri, KPIAssignmentResource.class, "kpiId"))
                 .build();
     }
 
     @GET
-    @Path("{aId}/evaluate")
+    @Path("{aId}/evaluation")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getEvaluation(
+    public Response evaluate(
             @PathParam("aId") UUID aId,
             @Context Request request) {
         KPIEvaluationResult result = evaluationUseCase.evaluateKPI(new KPIAssignmentId(aId));
@@ -268,14 +269,14 @@ public class KPIAssignmentResource {
 
         Response.ResponseBuilder builder = cachingUtil.getConditionalBuilder(request, apiResult);
 
-        if (builder.build().getStatus() == Response.Status.OK.getStatusCode()) {
-            URI selfUri = uriInfo.getAbsolutePath();
-            String self = linkService.buildSelfLinkSubLayerBack(selfUri, KPIAssignmentResource.class);
-
-            return builder
-                    .header("Link", self)
-                    .build();
+        if (builder.build().getStatus() != Response.Status.OK.getStatusCode()) {
+            return builder.build();
         }
-        return builder.build();
+
+        URI selfUri = uriInfo.getAbsolutePath();
+
+        return builder
+                .header("Link", linkService.buildSelfLinkSubLayerBack(selfUri, KPIAssignmentResource.class))
+                .build();
     }
 }

@@ -253,7 +253,7 @@ public class HypermediaLinkService {
 
     public Link buildEvaluationLinkSub(URI selfUri, Class<?> pathClass) {
         URI evaluationUri = UriBuilder.fromUri(selfUri)
-                .path("evaluate")
+                .path("evaluation")
                 .build();
 
         return Link.fromUri(evaluationUri)

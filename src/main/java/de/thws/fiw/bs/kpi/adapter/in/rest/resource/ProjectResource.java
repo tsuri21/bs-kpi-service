@@ -191,7 +191,7 @@ public class ProjectResource {
     }
 
     @GET
-    @Path("{id}/evaluate")
+    @Path("{id}/evaluation")
     @Produces(MediaType.APPLICATION_JSON)
     public Response evaluate(
             @PathParam("id") UUID id,
@@ -201,14 +201,14 @@ public class ProjectResource {
 
         Response.ResponseBuilder builder = cachingUtil.getConditionalBuilder(request, apiResult);
 
-        if (builder.build().getStatus() == Response.Status.OK.getStatusCode()) {
-            URI selfUri = uriInfo.getAbsolutePath();
-            String self = linkService.buildSelfLinkSubLayerBack(selfUri, ProjectResource.class);
-
-            return builder
-                    .header("Link", self)
-                    .build();
+        if (builder.build().getStatus() != Response.Status.OK.getStatusCode()) {
+            return builder.build();
         }
-        return builder.build();
+
+        URI selfUri = uriInfo.getAbsolutePath();
+
+        return builder
+                .header("Link", linkService.buildSelfLinkSubLayerBack(selfUri, ProjectResource.class))
+                .build();
     }
 }

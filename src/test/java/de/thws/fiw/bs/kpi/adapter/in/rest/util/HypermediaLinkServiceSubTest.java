@@ -15,9 +15,6 @@ import static org.mockito.Mockito.*;
 public class HypermediaLinkServiceSubTest {
 
     private HypermediaLinkService linkService;
-    private UriInfo uriInfo;
-    private HttpHeaders headers;
-    private ResourceInfo resourceInfo;
     private UUID testId;
     private URI testSelfUri;
     private URI testSelfUriID;
@@ -25,9 +22,9 @@ public class HypermediaLinkServiceSubTest {
 
     @BeforeEach
     public void setUp() {
-        uriInfo = mock(UriInfo.class);
-        headers = mock(HttpHeaders.class);
-        resourceInfo = mock(ResourceInfo.class);
+        UriInfo uriInfo = mock(UriInfo.class);
+        HttpHeaders headers = mock(HttpHeaders.class);
+        ResourceInfo resourceInfo = mock(ResourceInfo.class);
         linkService = new HypermediaLinkService(uriInfo, headers, resourceInfo);
         testId = UUID.fromString("771dee4e-c7bb-4f1a-b899-1c2c20424b9e");
         testSelfUri = URI.create(BASE_URI + "/layer2");
@@ -65,7 +62,7 @@ public class HypermediaLinkServiceSubTest {
     void buildEvaluationLinkSub_returnsCorrectLink() {
         Link result = linkService.buildEvaluationLinkSub(testSelfUri, TestResource.class);
 
-        URI expected = URI.create(testSelfUri + "/evaluate");
+        URI expected = URI.create(testSelfUri + "/evaluation");
         assertEquals(expected, result.getUri());
         assertEquals("evaluateTest", result.getRel());
         assertEquals("GET", result.getParams().get("method"));
