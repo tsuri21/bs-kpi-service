@@ -184,6 +184,14 @@ public class HypermediaLinkService {
                 .build();
     }
 
+    public Link buildCustomLink(Class<?> targetRes, String function, String rel, String method) {
+        return Link.fromUriBuilder(uriInfo.getBaseUriBuilder().path(targetRes).path(targetRes, function))
+                .rel(rel)
+                .param("method", method)
+                .type(getMediaType())
+                .build();
+    }
+
     public void setSelfLink(AbstractDTO dto, Class<?> pathClass) {
         String href = uriInfo.getBaseUriBuilder()
                 .path(pathClass)
