@@ -85,7 +85,7 @@ class ThresholdsTest {
 
     @Test
     void range_rangeValid_success() {
-        Thresholds thresholds = Thresholds.range(50, 0.5, 2.3);
+        Thresholds thresholds = Thresholds.range(50.0, 0.5, 2.3);
 
         assertEquals(50, thresholds.getTargetValue());
         assertEquals(0.5, thresholds.getGreen());
@@ -96,7 +96,15 @@ class ThresholdsTest {
     void range_rangeOutOfOrder_throwsException() {
         assertThrows(
                 IllegalArgumentException.class,
-                () -> Thresholds.range(25, 1.5, 0.5)
+                () -> Thresholds.range(25.0, 1.5, 0.5)
+        );
+    }
+
+    @Test
+    void range_targetValueNull_throwsException() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> Thresholds.range(null, 0.5, 2.5)
         );
     }
 

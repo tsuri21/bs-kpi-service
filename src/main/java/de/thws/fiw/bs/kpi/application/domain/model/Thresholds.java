@@ -41,7 +41,11 @@ public final class Thresholds {
         return new Thresholds(green, yellow, null);
     }
 
-    public static Thresholds range(double targetValue, double green, double yellow) {
+    public static Thresholds range(Double targetValue, double green, double yellow) {
+        if (targetValue == null) {
+            throw new IllegalArgumentException("Target value must not be null");
+        }
+
         if (green <= 0 || yellow <= 0) {
             throw new IllegalArgumentException("Tolerances must be positive");
         }
