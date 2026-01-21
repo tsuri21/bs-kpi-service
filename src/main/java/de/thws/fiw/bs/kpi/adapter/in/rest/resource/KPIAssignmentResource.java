@@ -130,22 +130,23 @@ public class KPIAssignmentResource {
         Page<KPIAssignment> assignmentPage = kpiAssignmentUseCase.readAll(domainKPIId, new ProjectId(pId), pageRequest);
         List<KPIAssignmentDTO> assignments = mapper.toApiModels(assignmentPage.content());
 
+        URI selfUri = uriInfo.getAbsolutePath();
+        URI kpiUri = UriBuilder.fromUri(selfUri)
+                .path("availableKpis/1")
+                .build();
+
+        linkService.setSelfLinksSub(assignments, selfUri);
         Response.ResponseBuilder builder = cachingUtil.getConditionalBuilder(request, assignments);
 
         if (builder.build().getStatus() == Response.Status.OK.getStatusCode()) {
             return builder.build();
         }
 
-        URI selfUri = uriInfo.getAbsolutePath();
-        URI kpiUri = UriBuilder.fromUri(selfUri)
-                .path("availableKpis/1")
-                .build();
 
         if (userContext.isAdmin()) {
             builder.links(linkService.buildCreateLinkSub(selfUri, KPIAssignmentResource.class));
         }
 
-        linkService.setSelfLinksSub(assignments, selfUri);
         String availableKpisLink = linkService.buildCollectionLinkSub(kpiUri, KPIResource.class);
         String project = linkService.buildSelfLinkSubLayerBack(selfUri, ProjectResource.class);
         Link[] pagination = linkService.buildPaginationLinks(assignmentPage);
