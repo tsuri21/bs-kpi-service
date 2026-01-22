@@ -138,7 +138,7 @@ public class KPIAssignmentResource {
         linkService.setSelfLinksSub(assignments, selfUri);
         Response.ResponseBuilder builder = cachingUtil.getConditionalBuilder(request, assignments);
 
-        if (builder.build().getStatus() == Response.Status.OK.getStatusCode()) {
+        if (builder.build().getStatus() != Response.Status.OK.getStatusCode()) {
             return builder.build();
         }
 
