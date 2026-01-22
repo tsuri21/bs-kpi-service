@@ -1,4 +1,4 @@
-package de.thws.fiw.bs.kpi.common;
+package de.thws.fiw.bs.kpi.adapter.in.rest.util;
 
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
