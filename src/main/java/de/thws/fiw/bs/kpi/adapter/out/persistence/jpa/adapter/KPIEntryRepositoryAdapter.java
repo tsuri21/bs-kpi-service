@@ -1,5 +1,6 @@
 package de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.adapter;
 
+import de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.entity.KPIAssignmentEntity;
 import de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.entity.KPIEntryEntity;
 import de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.mapper.KPIEntryJpaMapper;
 import de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.util.ExceptionUtils;
@@ -55,7 +56,7 @@ public class KPIEntryRepositoryAdapter implements KPIEntryRepository {
         CriteriaQuery<KPIEntryEntity> cq = cb.createQuery(KPIEntryEntity.class);
         Root<KPIEntryEntity> root = cq.from(KPIEntryEntity.class);
 
-        cq.where(cb.equal(root.get("assignmentId"), id.value()));
+        cq.where(cb.equal(root.get("assignment").get("id"), id.value()));
 
         cq.orderBy(cb.desc(root.get("timestamp")));
 
@@ -73,8 +74,8 @@ public class KPIEntryRepositoryAdapter implements KPIEntryRepository {
     @Override
     public Map<KPIAssignmentId, KPIEntry> findLatestEntriesByProject(ProjectId projectId) {
         String sql = "SELECT e FROM KPIEntryEntity e " +
-                "WHERE e.assignmentId IN (SELECT a.id FROM KPIAssignmentEntity a WHERE a.projectId = :pid) " +
-                "AND e.timestamp = (SELECT MAX(e2.timestamp) FROM KPIEntryEntity e2 WHERE e2.assignmentId = e.assignmentId)";
+                "WHERE e.assignment.id IN (SELECT a.id FROM KPIAssignmentEntity a WHERE a.project.id = :pid) " +
+                "AND e.timestamp = (SELECT MAX(e2.timestamp) FROM KPIEntryEntity e2 WHERE e2.assignment.id = e.assignment.id)";
 
         try {
             List<KPIEntryEntity> entities = em.createQuery(sql, KPIEntryEntity.class)
@@ -113,7 +114,11 @@ public class KPIEntryRepositoryAdapter implements KPIEntryRepository {
     @Transactional
     public void save(KPIEntry kpiEntry) {
         try {
-            em.persist(mapper.toPersistenceModel(kpiEntry));
+            KPIEntryEntity kpiAssignmentEntity = mapper.toPersistenceModel(kpiEntry);
+            KPIAssignmentEntity assignmentProxy = em.getReference(KPIAssignmentEntity.class, kpiEntry.getKpiAssignmentId().value());
+            kpiAssignmentEntity.setAssignment(assignmentProxy);
+
+            em.persist(kpiAssignmentEntity);
             em.flush();
         } catch (PersistenceException ex) {
             if (ExceptionUtils.isUniqueConstraintViolation(ex)) {
@@ -161,7 +166,7 @@ public class KPIEntryRepositoryAdapter implements KPIEntryRepository {
         List<Predicate> predicates = new ArrayList<>();
 
         if (id != null) {
-            predicates.add(cb.equal(root.get("assignmentId"), id.value()));
+            predicates.add(cb.equal(root.get("assignment").get("id"), id.value()));
         }
 
         if (from != null && to != null) {

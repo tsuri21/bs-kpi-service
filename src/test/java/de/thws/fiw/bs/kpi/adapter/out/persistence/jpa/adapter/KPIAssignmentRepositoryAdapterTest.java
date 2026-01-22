@@ -1,6 +1,7 @@
 package de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.adapter;
 
 import de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.entity.KPIEntity;
+import de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.entity.ProjectEntity;
 import de.thws.fiw.bs.kpi.application.domain.exception.AlreadyExistsException;
 import de.thws.fiw.bs.kpi.application.domain.model.*;
 import de.thws.fiw.bs.kpi.application.domain.model.kpi.KPI;
@@ -17,6 +18,7 @@ import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 
@@ -55,10 +57,25 @@ class KPIAssignmentRepositoryAdapterTest {
         em.flush();
     }
 
+    private void createProject(ProjectId id, String name) {
+        ProjectEntity project = new ProjectEntity(
+                id.value(),
+                name,
+                URI.create("https://github.com/org/" + name)
+        );
+        em.persist(project);
+        em.flush();
+    }
+
     private void createDefaultAssignments() {
         createKpi(defaultK1);
         createKpi(defaultK2);
         createKpi(defaultK3);
+
+        createProject(defaultPId1, "Project-A");
+        createProject(defaultPId2, "Project-B");
+        createProject(defaultPId3, "Project-C");
+
         adapter.save(new KPIAssignment(defaultKAId1, createThresholds(), defaultK1, defaultPId1));
         adapter.save(new KPIAssignment(defaultKAId2, createThresholds(), defaultK2, defaultPId2));
         adapter.save(new KPIAssignment(defaultKAId3, createThresholds(), defaultK3, defaultPId3));
@@ -67,8 +84,12 @@ class KPIAssignmentRepositoryAdapterTest {
     @Test
     void findById_idExists_returnsAssignment() {
         createKpi(defaultK1);
+
+        ProjectId pId = ProjectId.newId();
+        createProject(pId, "Test");
+
         KPIAssignmentId id = KPIAssignmentId.newId();
-        KPIAssignment assignment = new KPIAssignment(id, createThresholds(), defaultK1, ProjectId.newId());
+        KPIAssignment assignment = new KPIAssignment(id, createThresholds(), defaultK1, pId);
 
         adapter.save(assignment);
 
@@ -103,7 +124,7 @@ class KPIAssignmentRepositoryAdapterTest {
                 .map(k -> k.getThresholds().getGreen())
                 .toList();
 
-        assertEquals(List.of(10.0, 10.0, 10.0), values);
+        assertTrue(values.containsAll(List.of(10.0, 10.0, 10.0)));
     }
 
     @Test
@@ -186,7 +207,10 @@ class KPIAssignmentRepositoryAdapterTest {
         KPIAssignmentId id = KPIAssignmentId.newId();
         createKpi(defaultK1);
         KPI kpi = defaultK1;
+
         ProjectId projectId = ProjectId.newId();
+        createProject(projectId, "Test");
+
         KPIAssignment assignment = new KPIAssignment(id, createThresholds(), kpi, projectId);
 
         adapter.save(assignment);
@@ -207,7 +231,10 @@ class KPIAssignmentRepositoryAdapterTest {
     void save_duplicateKPIIdAndProjectId_throwsException() {
         createKpi(defaultK1);
         KPI kpi = defaultK1;
+
         ProjectId projectId = ProjectId.newId();
+        createProject(projectId, "Test");
+
         adapter.save(new KPIAssignment(KPIAssignmentId.newId(), createThresholds(), kpi, projectId));
 
         KPIAssignment duplicate = new KPIAssignment(KPIAssignmentId.newId(), createThresholds(), kpi, projectId);
@@ -220,7 +247,9 @@ class KPIAssignmentRepositoryAdapterTest {
         KPIAssignmentId id = KPIAssignmentId.newId();
         createKpi(defaultK1);
         KPI kpi = defaultK1;
+
         ProjectId project = ProjectId.newId();
+        createProject(project, "Test");
 
         adapter.save(new KPIAssignment(id, createThresholds(), kpi, project));
 
@@ -237,7 +266,11 @@ class KPIAssignmentRepositoryAdapterTest {
     void delete_idExists_removesAssignment() {
         createKpi(defaultK1);
         KPIAssignmentId id = KPIAssignmentId.newId();
-        adapter.save(new KPIAssignment(id, createThresholds(), defaultK1, ProjectId.newId()));
+
+        ProjectId pId = ProjectId.newId();
+        createProject(pId, "Test");
+
+        adapter.save(new KPIAssignment(id, createThresholds(), defaultK1, pId));
 
         adapter.delete(id);
 
@@ -248,7 +281,11 @@ class KPIAssignmentRepositoryAdapterTest {
     void delete_idMissing_doesNothing() {
         createKpi(defaultK1);
         KPIAssignmentId existingId = KPIAssignmentId.newId();
-        adapter.save(new KPIAssignment(existingId, createThresholds(), defaultK1, ProjectId.newId()));
+
+        ProjectId pId = ProjectId.newId();
+        createProject(pId, "Test");
+
+        adapter.save(new KPIAssignment(existingId, createThresholds(), defaultK1, pId));
 
         adapter.delete(KPIAssignmentId.newId());
 

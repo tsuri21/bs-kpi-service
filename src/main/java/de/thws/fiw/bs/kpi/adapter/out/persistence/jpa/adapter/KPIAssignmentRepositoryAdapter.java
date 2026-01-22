@@ -1,6 +1,7 @@
 package de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.adapter;
 
 import de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.entity.KPIAssignmentEntity;
+import de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.entity.ProjectEntity;
 import de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.mapper.KPIAssignmentJpaMapper;
 import de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.util.ExceptionUtils;
 import de.thws.fiw.bs.kpi.application.domain.exception.AlreadyExistsException;
@@ -66,7 +67,11 @@ public class KPIAssignmentRepositoryAdapter implements KPIAssignmentRepository {
     @Transactional
     public void save(KPIAssignment kpiAssignment) {
         try {
-            em.persist(mapper.toPersistenceModel(kpiAssignment));
+            KPIAssignmentEntity kpiAssignmentEntity = mapper.toPersistenceModel(kpiAssignment);
+            ProjectEntity projectProxy = em.getReference(ProjectEntity.class, kpiAssignment.getProjectId().value());
+            kpiAssignmentEntity.setProject(projectProxy);
+
+            em.persist(kpiAssignmentEntity);
             em.flush();
         } catch (PersistenceException ex) {
             if (ExceptionUtils.isUniqueConstraintViolation(ex)) {
@@ -80,7 +85,11 @@ public class KPIAssignmentRepositoryAdapter implements KPIAssignmentRepository {
     @Transactional
     public void update(KPIAssignment kpiAssignment) {
         try {
-            em.merge(mapper.toPersistenceModel(kpiAssignment));
+            KPIAssignmentEntity kpiAssignmentEntity = mapper.toPersistenceModel(kpiAssignment);
+            ProjectEntity projectProxy = em.getReference(ProjectEntity.class, kpiAssignment.getProjectId().value());
+            kpiAssignmentEntity.setProject(projectProxy);
+
+            em.merge(kpiAssignmentEntity);
             em.flush();
         } catch (PersistenceException ex) {
             throw new InfrastructureException("Failed to update kpiAssignment with ID: " + kpiAssignment.getId().value(), ex);
@@ -125,11 +134,11 @@ public class KPIAssignmentRepositoryAdapter implements KPIAssignmentRepository {
         List<Predicate> predicates = new ArrayList<>();
 
         if (kpiId != null) {
-            predicates.add(cb.equal(root.get("kpiEntity").get("id"), kpiId.value()));
+            predicates.add(cb.equal(root.get("kpi").get("id"), kpiId.value()));
         }
 
         if (projectId != null) {
-            predicates.add(cb.equal(root.get("projectId"), projectId.value()));
+            predicates.add(cb.equal(root.get("project").get("id"), projectId.value()));
         }
 
         return predicates.toArray(Predicate[]::new);

@@ -2,6 +2,8 @@ package de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.entity;
 
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -22,23 +24,27 @@ public class KPIAssignmentEntity {
     @Column
     private Double targetValue;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "kpi_id", nullable = false)
-    private KPIEntity kpiEntity;
+    private KPIEntity kpi;
 
-    @Column(name = "project_id", nullable = false)
-    private UUID projectId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "project_id", nullable = false)
+    private ProjectEntity project;
+
+    @OneToMany(mappedBy = "assignment", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<KPIEntryEntity> entries = new ArrayList<>();
 
     public KPIAssignmentEntity() {
     }
 
-    public KPIAssignmentEntity(UUID id, double green, double yellow, Double targetValue, KPIEntity kpi, UUID projectId) {
+    public KPIAssignmentEntity(UUID id, double green, double yellow, Double targetValue, KPIEntity kpi, ProjectEntity project) {
         this.id = id;
         this.green = green;
         this.yellow = yellow;
         this.targetValue = targetValue;
-        this.kpiEntity = kpi;
-        this.projectId = projectId;
+        this.kpi = kpi;
+        this.project = project;
     }
 
     public UUID getId() {
@@ -73,19 +79,19 @@ public class KPIAssignmentEntity {
         this.targetValue = targetValue;
     }
 
-    public KPIEntity getKpiEntity() {
-        return kpiEntity;
+    public KPIEntity getKpi() {
+        return kpi;
     }
 
-    public void setKpiEntity(KPIEntity kpiEntity) {
-        this.kpiEntity = kpiEntity;
+    public void setKpi(KPIEntity kpiEntity) {
+        this.kpi = kpiEntity;
     }
 
-    public UUID getProjectId() {
-        return projectId;
+    public ProjectEntity getProject() {
+        return project;
     }
 
-    public void setProjectId(UUID projectId) {
-        this.projectId = projectId;
+    public void setProject(ProjectEntity project) {
+        this.project = project;
     }
 }

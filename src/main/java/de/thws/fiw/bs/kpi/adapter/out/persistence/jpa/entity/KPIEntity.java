@@ -1,10 +1,10 @@
 package de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.entity;
 
 import de.thws.fiw.bs.kpi.application.domain.model.kpi.TargetDestination;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -18,6 +18,9 @@ public class KPIEntity {
 
     @Column(nullable = false)
     private TargetDestination destination;
+
+    @OneToMany(mappedBy = "kpi", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<KPIAssignmentEntity> assignments = new ArrayList<>();
 
     public KPIEntity() {
     }

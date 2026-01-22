@@ -2,6 +2,7 @@ package de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.adapter;
 
 import de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.entity.KPIAssignmentEntity;
 import de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.entity.KPIEntity;
+import de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.entity.ProjectEntity;
 import de.thws.fiw.bs.kpi.application.domain.exception.AlreadyExistsException;
 import de.thws.fiw.bs.kpi.application.domain.model.kpi.TargetDestination;
 import de.thws.fiw.bs.kpi.application.domain.model.kpiAssignment.KPIAssignmentId;
@@ -16,6 +17,7 @@ import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 
+import java.net.URI;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -44,15 +46,44 @@ class KPIEntryRepositoryAdapterTest {
     Instant timestamp1 = Instant.parse("2026-01-06T12:00:00Z");
     Instant timestamp2 = Instant.parse("2026-01-05T10:00:00Z");
 
-    private void createDefaultEntries() {
-        adapter.save(KPIEntry.createNew(KPIEntryId.newId(), assignment1, timestamp1, 20.0, FIXED_CLOCK));
-        adapter.save(KPIEntry.createNew(KPIEntryId.newId(), assignment1, timestamp2, 18.0, FIXED_CLOCK));
-        adapter.save(KPIEntry.createNew(KPIEntryId.newId(), assignment2, timestamp1, 30.0, FIXED_CLOCK));
+    private void createProject(ProjectId id, String name) {
+        if (em.find(ProjectEntity.class, id.value()) != null) {
+            return;
+        }
+        ProjectEntity project = new ProjectEntity(
+                id.value(),
+                name,
+                URI.create("https://github.com/org/" + name)
+        );
+        em.persist(project);
+    }
+
+    private void ensureAssignmentExists(KPIAssignmentId assignmentId) {
+        ProjectId projectId = ProjectId.newId();
+        createProject(projectId, "Project-" + assignmentId.value());
+
+        KPIEntity kpi = new KPIEntity(UUID.randomUUID(), "KPI-" + assignmentId.value(), TargetDestination.DECREASING);
+        em.persist(kpi);
+
+        ProjectEntity projectRef = em.getReference(ProjectEntity.class, projectId.value());
+
+        KPIAssignmentEntity entity = new KPIAssignmentEntity(
+                assignmentId.value(),
+                10.0, 20.0, null,
+                kpi,
+                projectRef
+        );
+        em.persist(entity);
+        em.flush();
     }
 
     private void createAssignmentForProject(KPIAssignmentId assignmentId, ProjectId projectId, String kpiName) {
+        createProject(projectId, "ProjectFor-" + kpiName);
+
         KPIEntity kpi = new KPIEntity(UUID.randomUUID(), kpiName, TargetDestination.DECREASING);
         em.persist(kpi);
+
+        ProjectEntity projectRef = em.getReference(ProjectEntity.class, projectId.value());
 
         KPIAssignmentEntity entity = new KPIAssignmentEntity(
                 assignmentId.value(),
@@ -60,15 +91,26 @@ class KPIEntryRepositoryAdapterTest {
                 10.0,
                 15.0,
                 kpi,
-                projectId.value()
+                projectRef
         );
 
         em.persist(entity);
         em.flush();
     }
 
+    private void createDefaultEntries() {
+        ensureAssignmentExists(assignment1);
+        ensureAssignmentExists(assignment2);
+
+        adapter.save(KPIEntry.createNew(KPIEntryId.newId(), assignment1, timestamp1, 20.0, FIXED_CLOCK));
+        adapter.save(KPIEntry.createNew(KPIEntryId.newId(), assignment1, timestamp2, 18.0, FIXED_CLOCK));
+        adapter.save(KPIEntry.createNew(KPIEntryId.newId(), assignment2, timestamp1, 30.0, FIXED_CLOCK));
+    }
+
     @Test
     void findById_idExists_returnsEntry() {
+        ensureAssignmentExists(assignment1);
+
         KPIEntryId id = KPIEntryId.newId();
         KPIEntry entry = KPIEntry.createNew(id, assignment1, timestamp1, 42.0, FIXED_CLOCK);
 
@@ -114,6 +156,7 @@ class KPIEntryRepositoryAdapterTest {
         ProjectId projectId = ProjectId.newId();
         KPIAssignmentId assignmentIdA = KPIAssignmentId.newId();
         KPIAssignmentId assignmentIdB = KPIAssignmentId.newId();
+
         createAssignmentForProject(assignmentIdA, projectId, "Test1");
         createAssignmentForProject(assignmentIdB, projectId, "Test2");
 
@@ -158,6 +201,7 @@ class KPIEntryRepositoryAdapterTest {
     @Test
     void findLatestEntriesByProject_noAssignmentsOrEntries_returnsEmptyMap() {
         ProjectId projectId = ProjectId.newId();
+        createProject(projectId, "EmptyProject");
 
         Map<KPIAssignmentId, KPIEntry> result = adapter.findLatestEntriesByProject(projectId);
 
@@ -314,6 +358,8 @@ class KPIEntryRepositoryAdapterTest {
 
     @Test
     void save_validEntry_persists() {
+        ensureAssignmentExists(assignment1);
+
         KPIEntryId id = KPIEntryId.newId();
         KPIEntry entry = KPIEntry.createNew(id, assignment1, timestamp1, 40.0, FIXED_CLOCK);
 
@@ -334,6 +380,8 @@ class KPIEntryRepositoryAdapterTest {
 
     @Test
     void save_duplicateAssignmentAndTimestamp_throwsException() {
+        ensureAssignmentExists(assignment1);
+
         KPIEntry entry = KPIEntry.createNew(KPIEntryId.newId(), assignment1, timestamp1, 20.0, FIXED_CLOCK);
         adapter.save(entry);
 
@@ -344,6 +392,8 @@ class KPIEntryRepositoryAdapterTest {
 
     @Test
     void delete_idExists_removesEntry() {
+        ensureAssignmentExists(assignment1);
+
         KPIEntryId id = KPIEntryId.newId();
         adapter.save(KPIEntry.createNew(id, assignment1, timestamp1, 40.0, FIXED_CLOCK));
 
@@ -360,6 +410,8 @@ class KPIEntryRepositoryAdapterTest {
 
     @Test
     void delete_idMissing_doesNothing() {
+        ensureAssignmentExists(assignment1);
+
         KPIEntryId existingId = KPIEntryId.newId();
         adapter.save(KPIEntry.createNew(existingId, assignment1, timestamp1, 10.0, FIXED_CLOCK));
 

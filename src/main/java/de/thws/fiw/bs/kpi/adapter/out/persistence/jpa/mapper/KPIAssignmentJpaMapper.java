@@ -24,14 +24,14 @@ public class KPIAssignmentJpaMapper implements PersistenceMapper<KPIAssignment, 
                 kpiAssignment.getThresholds().getYellow(),
                 kpiAssignment.getThresholds().getTargetValue(),
                 mapper.toPersistenceModel(kpiAssignment.getKpi()),
-                kpiAssignment.getProjectId().value()
+                null
         );
     }
 
     @Override
     public KPIAssignment toDomainModel(KPIAssignmentEntity kpiAssignmentEntity) {
         Thresholds thresholds;
-        TargetDestination dest = kpiAssignmentEntity.getKpiEntity().getDestination();
+        TargetDestination dest = kpiAssignmentEntity.getKpi().getDestination();
 
         if (dest == TargetDestination.RANGE) {
             thresholds = Thresholds.range(kpiAssignmentEntity.getTargetValue(), kpiAssignmentEntity.getGreen(), kpiAssignmentEntity.getYellow());
@@ -42,8 +42,8 @@ public class KPIAssignmentJpaMapper implements PersistenceMapper<KPIAssignment, 
         return new KPIAssignment(
                 new KPIAssignmentId(kpiAssignmentEntity.getId()),
                 thresholds,
-                mapper.toDomainModel(kpiAssignmentEntity.getKpiEntity()),
-                new ProjectId(kpiAssignmentEntity.getProjectId())
+                mapper.toDomainModel(kpiAssignmentEntity.getKpi()),
+                new ProjectId(kpiAssignmentEntity.getProject().getId())
         );
     }
 }

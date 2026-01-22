@@ -3,6 +3,8 @@ package de.thws.fiw.bs.kpi.adapter.out.persistence.jpa.entity;
 import jakarta.persistence.*;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -16,6 +18,9 @@ public class ProjectEntity {
 
     @Column(nullable = false, unique = true)
     private URI repoUrl;
+
+    @OneToMany(mappedBy = "project", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<KPIAssignmentEntity> assignments = new ArrayList<>();
 
     public ProjectEntity() {}
 

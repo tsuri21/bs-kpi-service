@@ -14,8 +14,9 @@ public class KPIEntryEntity {
     @Id
     private UUID id;
 
-    @Column(name = "assignment_id", nullable = false)
-    private UUID assignmentId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "assignment_id", nullable = false)
+    private KPIAssignmentEntity assignment;
 
     @Column(name = "timestamp", nullable = false)
     private Instant timestamp;
@@ -26,9 +27,9 @@ public class KPIEntryEntity {
     public KPIEntryEntity() {
     }
 
-    public KPIEntryEntity(UUID id, UUID assignmentId, Instant timestamp, double value) {
+    public KPIEntryEntity(UUID id, KPIAssignmentEntity assignment, Instant timestamp, double value) {
         this.id = id;
-        this.assignmentId = assignmentId;
+        this.assignment = assignment;
         this.timestamp = timestamp;
         this.measurement = value;
     }
@@ -41,12 +42,12 @@ public class KPIEntryEntity {
         this.id = id;
     }
 
-    public UUID getAssignmentId() {
-        return assignmentId;
+    public KPIAssignmentEntity getAssignment() {
+        return assignment;
     }
 
-    public void setAssignmentId(UUID assignmentId) {
-        this.assignmentId = assignmentId;
+    public void setAssignment(KPIAssignmentEntity assignment) {
+        this.assignment = assignment;
     }
 
     public Instant getTimestamp() {
