@@ -66,7 +66,7 @@ public class KPIEntryResource {
 
         URI selfUri = uriInfo.getAbsolutePath();
 
-        if (userContext.isAdmin()) {
+        if (userContext.isAdmin() || userContext.isTechnicalUser()) {
             builder.links(linkService.buildDeleteLinkSub(selfUri, KPIEntryResource.class));
         }
 
@@ -104,7 +104,7 @@ public class KPIEntryResource {
 
         URI selfUri = uriInfo.getAbsolutePath();
 
-        if (userContext.isAdmin()) {
+        if (userContext.isAdmin() || userContext.isTechnicalUser()) {
             builder.links(linkService.buildCreateLinkSub(selfUri, KPIEntry.class));
         }
 
