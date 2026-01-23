@@ -19,10 +19,12 @@ class KPIEntryResourceIT {
     private static String ADMIN_TOKEN;
     private static String ADMIN_ID;
     private static String USER_TOKEN;
+    private static String TECH_USER_TOKEN;
     private static String PROJECT_ID;
     private static String ASSIGNMENT_ID;
     private static String KPI_ID;
-    private static String ENTRY_ID;
+    private static String ENTRY_ID_1;
+    private static String ENTRY_ID_2;
     private static String FIRST_ENTRY;
 
     private static final String BASE_URL = "http://localhost:8080/api";
@@ -35,6 +37,8 @@ class KPIEntryResourceIT {
         ADMIN_TOKEN = fetchToken("admin-entry", "adminPass");
         registerUser("user-entry", "userPass", "Member");
         USER_TOKEN = fetchToken("user-entry", "userPass");
+        registerUser("techuser-entry", "techPass", "Technical_User");
+        TECH_USER_TOKEN = fetchToken("techuser-entry", "techPass");
 
         Response pRes = given().auth().oauth2(ADMIN_TOKEN).contentType(ContentType.JSON)
                 .body("{\"name\": \"Entry Test Project\", \"repoUrl\": \"https://github.com/user/repo\"}").post("/projects");
@@ -155,6 +159,17 @@ class KPIEntryResourceIT {
                 .extract().headers().getValues("Link");
 
         assertThat(adminLinks, hasItem(containsString("rel=\"createKPIEntry\"")));
+
+        List<String> techLinks = given()
+                .auth().oauth2(TECH_USER_TOKEN)
+                .when()
+                .get("/projects/" + PROJECT_ID + "/assignments/" + ASSIGNMENT_ID + "/entries")
+                .then()
+                .statusCode(200)
+                .header("X-Total-Count", is("15"))
+                .extract().headers().getValues("Link");
+
+        assertThat(techLinks, hasItem(containsString("rel=\"createKPIEntry\"")));
     }
 
     @Test
@@ -330,6 +345,7 @@ class KPIEntryResourceIT {
     @Order(6)
     void createKPIEntry_bothAuths_matchingOutcome() {
         String json = String.format("{\"measurement\": 99.0}");
+        String json2 = String.format("{\"measurement\": 89.0}");
 
         Response res = given()
                 .auth().oauth2(ADMIN_TOKEN)
@@ -341,10 +357,25 @@ class KPIEntryResourceIT {
                 .statusCode(201)
                 .extract().response();
 
-        ENTRY_ID = res.getHeader("Location").substring(res.getHeader("Location").lastIndexOf("/") + 1);
+        ENTRY_ID_1 = res.getHeader("Location").substring(res.getHeader("Location").lastIndexOf("/") + 1);
         List<String> links = res.getHeaders().getValues("Link");
         assertThat(links, hasItem(containsString("rel=\"self\"")));
         assertThat(links, hasItem(containsString("rel=\"getAllKPIEntryItems\"")));
+
+        Response res2 = given()
+                .auth().oauth2(TECH_USER_TOKEN)
+                .contentType(ContentType.JSON)
+                .body(json)
+                .when()
+                .post("/projects/" + PROJECT_ID + "/assignments/" + ASSIGNMENT_ID + "/entries")
+                .then()
+                .statusCode(201)
+                .extract().response();
+
+        ENTRY_ID_2 = res2.getHeader("Location").substring(res2.getHeader("Location").lastIndexOf("/") + 1);
+        List<String> links2 = res.getHeaders().getValues("Link");
+        assertThat(links2, hasItem(containsString("rel=\"self\"")));
+        assertThat(links2, hasItem(containsString("rel=\"getAllKPIEntryItems\"")));
 
         given().auth().oauth2(USER_TOKEN).contentType(ContentType.JSON).body(json)
                 .post("/projects/" + PROJECT_ID + "/assignments/" + ASSIGNMENT_ID + "/entries")
@@ -357,7 +388,7 @@ class KPIEntryResourceIT {
         List<String> userLinks = given()
                 .auth().oauth2(USER_TOKEN)
                 .when()
-                .get("/projects/" + PROJECT_ID + "/assignments/" + ASSIGNMENT_ID + "/entries/" + ENTRY_ID)
+                .get("/projects/" + PROJECT_ID + "/assignments/" + ASSIGNMENT_ID + "/entries/" + ENTRY_ID_1)
                 .then()
                 .statusCode(200)
                 .headers("Cache-Control", notNullValue())
@@ -369,25 +400,42 @@ class KPIEntryResourceIT {
         List<String> adminLinks = given()
                 .auth().oauth2(ADMIN_TOKEN)
                 .when()
-                .get("/projects/" + PROJECT_ID + "/assignments/" + ASSIGNMENT_ID + "/entries/" + ENTRY_ID)
+                .get("/projects/" + PROJECT_ID + "/assignments/" + ASSIGNMENT_ID + "/entries/" + ENTRY_ID_1)
                 .then()
                 .statusCode(200)
                 .headers("Cache-Control", notNullValue())
                 .extract().headers().getValues("Link");
 
         assertThat(adminLinks, hasItem(containsString("rel=\"deleteKPIEntry\"")));
+
+        List<String> techLinks = given()
+                .auth().oauth2(TECH_USER_TOKEN)
+                .when()
+                .get("/projects/" + PROJECT_ID + "/assignments/" + ASSIGNMENT_ID + "/entries/"  + ENTRY_ID_1)
+                .then()
+                .statusCode(200)
+                .headers("Cache-Control", notNullValue())
+                .extract().headers().getValues("Link");
+
+        assertThat(techLinks, hasItem(containsString("rel=\"deleteKPIEntry\"")));
     }
 
     @Test
     @Order(8)
     void delete_bothAuths_deletesAccording() {
-        given().auth().oauth2(USER_TOKEN).delete("/projects/" + PROJECT_ID + "/assignments/" + ASSIGNMENT_ID + "/entries/" + ENTRY_ID)
+        given().auth().oauth2(USER_TOKEN).delete("/projects/" + PROJECT_ID + "/assignments/" + ASSIGNMENT_ID + "/entries/" + ENTRY_ID_1)
                 .then().statusCode(403);
 
-        given().auth().oauth2(ADMIN_TOKEN).delete("/projects/" + PROJECT_ID + "/assignments/" + ASSIGNMENT_ID + "/entries/" + ENTRY_ID)
+        given().auth().oauth2(ADMIN_TOKEN).delete("/projects/" + PROJECT_ID + "/assignments/" + ASSIGNMENT_ID + "/entries/" + ENTRY_ID_1)
                 .then().statusCode(204);
 
-        given().auth().oauth2(ADMIN_TOKEN).delete("/projects/" + PROJECT_ID + "/assignments/" + ASSIGNMENT_ID + "/entries/" + ENTRY_ID)
+        given().auth().oauth2(ADMIN_TOKEN).delete("/projects/" + PROJECT_ID + "/assignments/" + ASSIGNMENT_ID + "/entries/" + ENTRY_ID_1)
+                .then().statusCode(404);
+
+        given().auth().oauth2(ADMIN_TOKEN).delete("/projects/" + PROJECT_ID + "/assignments/" + ASSIGNMENT_ID + "/entries/" + ENTRY_ID_2)
+                .then().statusCode(204);
+
+        given().auth().oauth2(ADMIN_TOKEN).delete("/projects/" + PROJECT_ID + "/assignments/" + ASSIGNMENT_ID + "/entries/" + ENTRY_ID_2)
                 .then().statusCode(404);
     }
 
