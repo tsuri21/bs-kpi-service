@@ -157,6 +157,42 @@ public class UserResourceIT {
 
     @Test
     @Order(3)
+    void getAll_isConditional_returnsCache() {
+        String initialListEtag = given()
+                .auth().oauth2(ADMIN_TOKEN)
+                .queryParam("page", 2)
+                .get("/users")
+                .then().statusCode(200)
+                .extract().header("ETag");
+
+        given()
+                .auth().oauth2(ADMIN_TOKEN)
+                .queryParam("page", 2)
+                .header("If-None-Match", initialListEtag)
+                .get("/users")
+                .then()
+                .statusCode(304)
+                .header("ETag", is(initialListEtag));
+
+        String id = registerUser("testworker", "user-pw", "Member");
+
+        given()
+                .auth().oauth2(ADMIN_TOKEN)
+                .queryParam("page", 2)
+                .header("If-None-Match", initialListEtag)
+                .get("/users")
+                .then()
+                .statusCode(200)
+                .header("ETag", not(is(initialListEtag)));
+
+        given()
+                .auth().oauth2(ADMIN_TOKEN)
+                .delete("/users/" + id)
+                .then().statusCode(204);
+    }
+
+    @Test
+    @Order(4)
     void getMe_User_Success() {
         List<String> links = given()
                 .auth().oauth2(USER_TOKEN)
@@ -187,7 +223,7 @@ public class UserResourceIT {
     }
 
     @Test
-    @Order(4)
+    @Order(5)
     void getById_bothAuths_returnsMatchingLinks() {
         given()
                 .auth().oauth2(USER_TOKEN)
@@ -212,7 +248,7 @@ public class UserResourceIT {
     }
 
     @Test
-    @Order(5)
+    @Order(6)
     void delete_bothAuths_deletesAccording() {
         given()
                 .auth().oauth2(USER_TOKEN)
